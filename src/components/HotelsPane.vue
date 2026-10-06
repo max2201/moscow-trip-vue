@@ -5,6 +5,7 @@ import type { Guide, Stop, StopRows } from '../lib/types'
 import type { Filters } from '../lib/filters'
 import { applyFilters, encodeFilters } from '../lib/filters'
 import { useMarks } from '../composables/useMarks'
+import { useLegend } from '../composables/useLegend'
 import FiltersPanel from './FiltersPanel.vue'
 import HotelsTable from './HotelsTable.vue'
 import HotelCard from './HotelCard.vue'
@@ -12,6 +13,7 @@ import HotelMap from './HotelMap.vue'
 
 const props = defineProps<{ stop: Stop; data: StopRows; guide: Guide; filters: Filters }>()
 const { store, version } = useMarks()
+const { legend } = useLegend()
 const route = useRoute()
 const router = useRouter()
 
@@ -19,7 +21,7 @@ const marksView = computed(() => {
   version.value // зависимость: пересчитать при изменении отметок
   return { mine: (id: number) => store.mine(props.stop.id, id), anyPlus: (id: number) => store.anyPlus(props.stop.id, id) }
 })
-const list = computed(() => applyFilters(props.data.rows, props.filters, marksView.value))
+const list = computed(() => applyFilters(props.data.rows, props.filters, marksView.value, legend.value.r))
 const visible = computed(() => new Set(list.value.map((r) => r.id)))
 
 // Таблица на широком экране, карточки — на телефоне. Выбор запоминается.

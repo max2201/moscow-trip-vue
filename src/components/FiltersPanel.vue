@@ -6,9 +6,12 @@ import { FLAG_LABELS, defaultFilters } from '../lib/filters'
 import { TYPES, TYPE_ORDER } from '../lib/rows'
 import { useMarks } from '../composables/useMarks'
 import { plural } from '../lib/format'
+import { radiusText } from '../lib/maplegend'
+import { useLegend } from '../composables/useLegend'
 
 const props = defineProps<{ filters: Filters; rows: Row[]; stop: Stop; guide: Guide; shown: number; total: number }>()
 const { store, version } = useMarks()
+const { legend } = useLegend()
 const f = props.filters
 
 const zoneCounts = computed(() => { const c: Record<string, number> = {}; props.rows.forEach((r) => (c[r.z] = (c[r.z] || 0) + 1)); return c })
@@ -21,7 +24,8 @@ const savedCount = computed(() => props.rows.filter((r) => r.sv).length)
 const balCount = computed(() => props.rows.filter((r) => r.balcony).length)
 const balRoomCount = computed(() => props.rows.filter((r) => r.balRoom).length)
 const flags = computed(() => FLAG_LABELS.filter(([k]) => k !== 'saved' || savedCount.value))
-const flagCount = (k: FlagKey) => (k === 'balcony' ? balCount.value : k === 'balroom' ? balRoomCount.value : k === 'saved' ? savedCount.value : null)
+// у «Только в радиусе» вместо числа — текущий радиус круга с карты
+const flagCount = (k: FlagKey) => (k === 'inradius' ? radiusText(legend.value.r) : k === 'balcony' ? balCount.value : k === 'balroom' ? balRoomCount.value : k === 'saved' ? savedCount.value : null)
 
 const toggle = (arr: string[], v: string) => { const i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); else arr.push(v) }
 const RANGES: [RangeKey, RangeKey | null, string, number][] = [

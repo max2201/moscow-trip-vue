@@ -69,7 +69,9 @@ watch(() => props.selected, async (id) => {
   const i = props.list.findIndex((r) => r.id === id)
   if (i >= 0) { await nextTick(); virt.value.scrollToIndex(i, { align: 'center' }) }
 })
-watch(() => [props.filters.sort, props.filters.dir, props.list.length], () => box.value?.scrollTo({ top: 0 }))
+// Наверх — только когда меняются фильтры или сортировка. Раньше тут следили за массивом [sort, dir, list.length]:
+// геттер возвращал новый массив при каждом пересчёте списка (в том числе после отметки), и таблица прыгала в начало.
+watch(() => props.filters, () => box.value?.scrollTo({ top: 0 }), { deep: true })
 const sticky = (i: number) => (i < 3 ? { left: stickyLeft.value[i] + 'px' } : undefined)
 const rowClass = (r: Row) => {
   version.value
