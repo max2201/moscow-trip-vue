@@ -15,7 +15,7 @@ const mark = computed(() => (version.value, store.mine(props.stop.id, props.r.id
 </script>
 
 <template>
-  <article :id="'c' + r.id" :class="['hcard', r.anchor ? 'pin' : '', mark === 1 ? 'plus' : mark === -1 ? 'minus' : '', selected ? 'sel' : '']">
+  <article :id="'c' + r.id" :class="['hcard', r.anchor ? 'anchor' : '', mark === 1 ? 'plus' : mark === -1 ? 'minus' : '', selected ? 'sel' : '']">
     <div class="hcard-top">
       <MarkButton :stop="stop.id" :id="r.id" />
       <div>

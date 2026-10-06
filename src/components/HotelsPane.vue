@@ -20,7 +20,6 @@ const marksView = computed(() => {
   return { mine: (id: number) => store.mine(props.stop.id, id), anyPlus: (id: number) => store.anyPlus(props.stop.id, id) }
 })
 const list = computed(() => applyFilters(props.data.rows, props.filters, marksView.value))
-const pin = computed(() => props.data.rows.find((r) => r.anchor))
 const visible = computed(() => new Set(list.value.map((r) => r.id)))
 
 // Таблица на широком экране, карточки — на телефоне. Выбор запоминается.
@@ -65,16 +64,13 @@ watch(() => props.filters, () => {
     </div>
     <button class="link" type="button" @click="showMap = !showMap">{{ showMap ? 'Скрыть карту' : 'Показать карту' }}</button>
   </div>
-  <div :class="showMap ? 'hgrid2' : ''" :style="showMap ? '' : 'margin-top:12px'">
-    <div>
-      <HotelsTable v-if="view === 'table'" :list="list" :pin="pin" :stop="stop" :filters="filters" :selected="selected" @select="select" />
-      <div v-else class="cards">
-        <HotelCard v-if="pin" :r="pin" :stop="stop" :selected="selected === pin.id" />
-        <HotelCard v-for="r in list.slice(0, cardLimit)" :key="r.id" :r="r" :stop="stop" :selected="selected === r.id" />
-        <button v-if="list.length > cardLimit" class="more" type="button" @click="cardLimit += 40">Показать ещё {{ Math.min(40, list.length - cardLimit) }}</button>
-        <p v-if="!list.length" class="empty">Под эти фильтры ничего не подходит.</p>
-      </div>
-    </div>
+  <div :class="['hstack', view === 'cards' ? 'hs-cards' : 'hs-table']">
     <HotelMap v-if="showMap" :rows="data.rows" :visible="visible" :stop="stop" :selected="selected" @select="select" />
+    <HotelsTable v-if="view === 'table'" :list="list" :stop="stop" :filters="filters" :selected="selected" @select="select" />
+    <div v-else class="cards">
+      <HotelCard v-for="r in list.slice(0, cardLimit)" :key="r.id" :r="r" :stop="stop" :selected="selected === r.id" />
+      <button v-if="list.length > cardLimit" class="more" type="button" @click="cardLimit += 40">Показать ещё {{ Math.min(40, list.length - cardLimit) }}</button>
+      <p v-if="!list.length" class="empty">Под эти фильтры ничего не подходит.</p>
+    </div>
   </div>
 </template>

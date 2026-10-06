@@ -8,7 +8,7 @@ import { plural } from '../lib/format'
 import HotelCells from './HotelCells.vue'
 import { useMarks } from '../composables/useMarks'
 
-const props = defineProps<{ list: Row[]; pin: Row | undefined; stop: Stop; filters: Filters; selected: number | null }>()
+const props = defineProps<{ list: Row[]; stop: Stop; filters: Filters; selected: number | null }>()
 const emit = defineEmits<{ select: [id: number] }>()
 const { store, version } = useMarks()
 
@@ -45,7 +45,7 @@ const padTop = computed(() => (items.value.length ? items.value[0].start - headH
 const padBottom = computed(() => (items.value.length ? virt.value.getTotalSize() - items.value[items.value.length - 1].end : 0))
 const measure = (el: unknown) => { if (el) virt.value.measureElement(el as Element) }
 
-// ---- закреплённые столбцы и строка «нашего» отеля: меряем реальные размеры
+// ---- закреплённые столбцы: меряем реальные размеры
 let ro: ResizeObserver | null = null
 function remeasure() {
   const t = table.value
@@ -55,10 +55,7 @@ function remeasure() {
   const lefts: number[] = []
   for (let i = 0; i < 3; i++) { lefts.push(l); l += th[i]?.getBoundingClientRect().width ?? 0 }
   stickyLeft.value = lefts
-  const thead = t.querySelector('thead')?.getBoundingClientRect().height ?? 52
-  const pin = t.querySelector<HTMLElement>('tr.pinrow')?.getBoundingClientRect().height ?? 0
-  t.style.setProperty('--thh', thead + 'px')
-  headH.value = Math.round(thead + pin)
+  headH.value = Math.round(t.querySelector('thead')?.getBoundingClientRect().height ?? 52)
 }
 onMounted(() => {
   ro = new ResizeObserver(remeasure)
@@ -71,14 +68,13 @@ watch(() => props.selected, async (id) => {
   if (id == null) return
   const i = props.list.findIndex((r) => r.id === id)
   if (i >= 0) { await nextTick(); virt.value.scrollToIndex(i, { align: 'center' }) }
-  else if (props.pin?.id === id) box.value?.scrollTo({ top: 0, behavior: 'smooth' })
 })
 watch(() => [props.filters.sort, props.filters.dir, props.list.length], () => box.value?.scrollTo({ top: 0 }))
 const sticky = (i: number) => (i < 3 ? { left: stickyLeft.value[i] + 'px' } : undefined)
 const rowClass = (r: Row) => {
   version.value
   const m = store.mine(props.stop.id, r.id)
-  return [r.anchor ? 'pinrow' : '', r.proposed ? 'mark' : '', m === 1 ? 'plus' : m === -1 ? 'minus' : '', props.selected === r.id ? 'sel' : '']
+  return [r.anchor ? 'anchorrow' : '', r.proposed ? 'mark' : '', m === 1 ? 'plus' : m === -1 ? 'minus' : '', props.selected === r.id ? 'sel' : '']
 }
 </script>
 
@@ -96,7 +92,6 @@ const rowClass = (r: Row) => {
         </tr>
       </thead>
       <tbody>
-        <tr v-if="pin" :class="rowClass(pin)" @click="emit('select', pin.id)"><HotelCells :r="pin" :stop="stop" :left="stickyLeft" /></tr>
         <tr v-if="padTop > 0" class="spacer"><td :colspan="20" :style="{ height: padTop + 'px' }"></td></tr>
         <tr v-for="it in items" :key="it.key as number" :ref="measure" :data-index="it.index" :class="rowClass(list[it.index])" @click="emit('select', list[it.index].id)">
           <HotelCells :r="list[it.index]" :stop="stop" :left="stickyLeft" />
