@@ -129,9 +129,12 @@ onBeforeUnmount(() => {
 })
 
 watch([() => props.visible, () => props.selected, version, legend], render)
+// Подсказка открыта только у выбранного отеля: прежнюю закрываем, иначе они копятся на карте.
+let openTip: L.Layer | null = null
 watch(() => props.selected, (id) => {
+  openTip?.closeTooltip(); openTip = null
   const e = id != null ? entries.get(id) : null
-  if (e && map) { map.panTo(e.layer.getLatLng()); e.layer.openTooltip() }
+  if (e && map) { map.panTo(e.layer.getLatLng()); e.layer.openTooltip(); openTip = e.layer }
 })
 </script>
 
