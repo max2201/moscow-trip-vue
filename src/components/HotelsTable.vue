@@ -16,7 +16,7 @@ const COLS: [SortKey, string, string][] = [
   ['mark', '±', ''], ['rank', '#', ''], ['name', 'Отель', ''], ['my', 'Моя оценка', 'из 10'],
   ['night', 'Цена за ночь', ''], ['free', 'Отмена', ''], ['km', 'До «нашего» отеля', 'по прямой'],
   ['brief', 'Коротко об отеле', 'чем известен, осторожно, где'], ['pr', 'Хвалят', ''], ['co', 'Жалуются', ''],
-  ['flag', 'Красные флаги', 'отзывов с упоминанием'], ['sc', 'Trip.com', 'оценка, отзывов'],
+  ['flag', 'Красные флаги', 'отзывов с упоминанием'], ['sc', 'Trip.com', 'оценка, отзывов'], ['tcm', 'Отметки Trip.com', 'значки, рейтинги, акции'],
   ['cl', 'Чистота', ''], ['fa', 'Удобства', 'оценка гостей'], ['lo', 'Расположение', ''], ['se', 'Сервис', ''],
   ['amn', 'Что есть в отеле', ''], ['st', 'Тип', 'и звёзды'], ['ng', 'Негатив', 'оценки 6 и ниже'], ['ns', 'Шум', 'доля отзывов'],
 ]
@@ -94,12 +94,12 @@ const rowClass = (r: Row) => {
         </tr>
       </thead>
       <tbody>
-        <tr v-if="padTop > 0" class="spacer"><td :colspan="20" :style="{ height: padTop + 'px' }"></td></tr>
+        <tr v-if="padTop > 0" class="spacer"><td :colspan="21" :style="{ height: padTop + 'px' }"></td></tr>
         <tr v-for="it in items" :key="it.key as number" :ref="measure" :data-index="it.index" :class="rowClass(list[it.index])" @click="emit('select', list[it.index].id)">
           <HotelCells :r="list[it.index]" :stop="stop" :left="stickyLeft" />
         </tr>
-        <tr v-if="padBottom > 0" class="spacer"><td :colspan="20" :style="{ height: padBottom + 'px' }"></td></tr>
-        <tr v-if="!list.length"><td colspan="20" class="empty">Под эти фильтры ничего не подходит. Снимите один из фильтров или нажмите «Весь город».</td></tr>
+        <tr v-if="padBottom > 0" class="spacer"><td :colspan="21" :style="{ height: padBottom + 'px' }"></td></tr>
+        <tr v-if="!list.length"><td colspan="21" class="empty">Под эти фильтры ничего не подходит. Снимите один из фильтров или нажмите «Весь город».</td></tr>
       </tbody>
     </table>
   </div>

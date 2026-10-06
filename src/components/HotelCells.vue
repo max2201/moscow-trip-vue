@@ -8,10 +8,11 @@ import SubBar from './SubBar.vue'
 import BriefBlock from './BriefBlock.vue'
 import FlagsBlock from './FlagsBlock.vue'
 import Badges from './Badges.vue'
+import TcMarksBlock from './TcMarksBlock.vue'
 defineProps<{ r: Row; stop: Stop; left: number[] }>()
 </script>
 
-<!-- Ячейки одной строки: фрагмент из 20 <td>, строку <tr> рисует родитель. -->
+<!-- Ячейки одной строки: фрагмент из 21 <td>, строку <tr> рисует родитель. -->
 <template>
   <td class="sticky mkc" :style="{ left: left[0] + 'px' }"><MarkButton :stop="stop.id" :id="r.id" /></td>
   <td class="sticky rank" :style="{ left: left[1] + 'px' }">{{ r.rank }}</td>
@@ -31,6 +32,7 @@ defineProps<{ r: Row; stop: Stop; left: number[] }>()
   <td><ul class="pc cons"><li v-for="x in consList(r)" :key="x">{{ x }}</li></ul></td>
   <td><FlagsBlock :row="r" /></td>
   <td class="num"><b>{{ dec1(r.sc) }}</b><div class="sub2">{{ fmt(r.rv) }} отзывов</div></td>
+  <td><TcMarksBlock :tc="r.tc" /></td>
   <td><SubBar :v="r.cl" /></td>
   <td><SubBar :v="r.fa" /></td>
   <td><SubBar :v="r.lo" /></td>

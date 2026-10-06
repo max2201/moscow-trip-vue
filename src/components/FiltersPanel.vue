@@ -4,6 +4,7 @@ import type { Row, Stop, Guide } from '../lib/types'
 import type { Filters, FlagKey, RangeKey } from '../lib/filters'
 import { FLAG_LABELS, defaultFilters } from '../lib/filters'
 import { TYPES, TYPE_ORDER } from '../lib/rows'
+import { TC_LABELS, tcHas } from '../lib/tcmarks'
 import { useMarks } from '../composables/useMarks'
 import { plural } from '../lib/format'
 import { radiusText } from '../lib/maplegend'
@@ -20,6 +21,7 @@ const zones = computed(() => {
   return Object.keys(zoneCounts.value).sort((a, b) => +props.stop.prio.includes(b) - +props.stop.prio.includes(a) || order.indexOf(a) - order.indexOf(b))
 })
 const typeCounts = computed(() => { const c: Record<string, number> = {}; props.rows.forEach((r) => (c[r.tg] = (c[r.tg] || 0) + 1)); return c })
+const tcCounts = computed(() => Object.fromEntries(TC_LABELS.map(([k]) => [k, props.rows.filter((r) => tcHas(r.tc, k)).length])))
 const savedCount = computed(() => props.rows.filter((r) => r.sv).length)
 const balCount = computed(() => props.rows.filter((r) => r.balcony).length)
 const balRoomCount = computed(() => props.rows.filter((r) => r.balRoom).length)
@@ -76,6 +78,15 @@ const typeTitle = (t: string) => (TYPES.find((x) => x[0] === t)?.[1] ?? ['без
             <span class="box">✓</span>{{ t }} <span class="sub">{{ typeCounts[t] }}</span>
           </button>
           <button class="link" type="button" @click="f.types.splice(0)">Все типы</button>
+        </div>
+      </div>
+      <div class="group">
+        <span class="glabel">Отметки trip.com (есть хотя бы одна из выбранных)</span>
+        <div class="zones">
+          <button v-for="[k, label, title] in TC_LABELS.filter(([x]) => tcCounts[x])" :key="k" type="button" class="chip" :title="title" :aria-pressed="f.tcm.includes(k)" @click="toggle(f.tcm, k)">
+            <span class="box">✓</span>{{ label }} <span class="sub">{{ tcCounts[k] }}</span>
+          </button>
+          <button class="link" type="button" @click="f.tcm.splice(0)">Любые</button>
         </div>
       </div>
     </div>

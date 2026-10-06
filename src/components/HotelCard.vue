@@ -8,6 +8,7 @@ import ScoreChip from './ScoreChip.vue'
 import BriefBlock from './BriefBlock.vue'
 import FlagsBlock from './FlagsBlock.vue'
 import Badges from './Badges.vue'
+import TcMarksBlock from './TcMarksBlock.vue'
 import { useMarks } from '../composables/useMarks'
 const props = defineProps<{ r: Row; stop: Stop; selected: boolean }>()
 const { store, version } = useMarks()
@@ -22,6 +23,7 @@ const mark = computed(() => (version.value, store.mine(props.stop.id, props.r.id
         <h3><a :href="tripLink(r.id, stop)" target="_blank" rel="noopener">{{ r.nm }}</a></h3>
         <div class="meta">#{{ r.rank }}, {{ r.z }}<template v-if="r.yr">, открыт в {{ r.yr }}</template></div>
         <Badges :row="r" :stop="stop" />
+        <TcMarksBlock :tc="r.tc" quiet />
       </div>
       <ScoreChip :row="r" />
     </div>
