@@ -103,6 +103,9 @@ const typeTitle = (t: string) => (TYPES.find((x) => x[0] === t)?.[1] ?? ['без
       <button v-for="[k, label] in flags" :key="k" type="button" class="chip fc" :aria-pressed="f.flags.includes(k)" @click="toggle(f.flags, k)">
         <span class="box">✓</span>{{ label }}<span v-if="flagCount(k) != null" class="sub">{{ flagCount(k) }}</span>
       </button>
+      <button v-if="f.area" type="button" class="chip fc" aria-pressed="true" title="Отели внутри области, обведённой лассо на карте. Нажмите, чтобы убрать" @click="f.area = null">
+        <span class="box">✓</span>В обведённой области<span class="sub">✕</span>
+      </button>
       <button class="link" type="button" @click="reset">Сбросить фильтры</button>
       <button class="link" type="button" @click="clearMarks">Очистить мои отметки остановки</button>
       <span class="count">Показано {{ shown }} из {{ total }}<template v-if="counts.p || counts.m">. Ваши отметки: +{{ counts.p }}, −{{ counts.m }}</template><template v-for="o in others" :key="o.uid">; {{ o.name }}: +{{ o.p }}, −{{ o.m }}</template></span>

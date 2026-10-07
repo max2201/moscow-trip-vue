@@ -12,7 +12,7 @@ import TcMarksBlock from './TcMarksBlock.vue'
 defineProps<{ r: Row; stop: Stop; left: number[] }>()
 </script>
 
-<!-- Ячейки одной строки: фрагмент из 21 <td>, строку <tr> рисует родитель. -->
+<!-- Ячейки одной строки: фрагмент из 23 <td>, строку <tr> рисует родитель. -->
 <template>
   <td class="sticky mkc" :style="{ left: left[0] + 'px' }"><MarkButton :stop="stop.id" :id="r.id" /></td>
   <td class="sticky rank" :style="{ left: left[1] + 'px' }">{{ r.rank }}</td>
@@ -42,6 +42,8 @@ defineProps<{ r: Row; stop: Stop; left: number[] }>()
     <div class="sub2" style="margin-top:4px">всего {{ r.amn }}</div>
   </td>
   <td style="white-space:nowrap;font-size:13px">{{ r.tg }}<div v-if="r.cat && r.cat !== 'Отель' && r.cat !== r.tg" class="sub2">{{ r.cat }}</div><div style="color:var(--warn)">{{ r.st ? '★'.repeat(r.st) : '' }}<span v-if="!r.st" class="sub2">без звёзд</span></div></td>
+  <td class="num">{{ r.yr || '—' }}</td>
+  <td class="num">{{ r.ry || '—' }}</td>
   <td class="num">{{ r.ng == null ? '—' : dec(r.ng) + '%' }}</td>
   <td class="num">{{ r.ns == null ? '—' : dec(r.ns) + '%' }}</td>
 </template>

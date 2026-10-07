@@ -21,7 +21,7 @@ const mark = computed(() => (version.value, store.mine(props.stop.id, props.r.id
       <MarkButton :stop="stop.id" :id="r.id" />
       <div>
         <h3><a :href="tripLink(r.id, stop)" target="_blank" rel="noopener">{{ r.nm }}</a></h3>
-        <div class="meta">#{{ r.rank }}, {{ r.z }}<template v-if="r.yr">, открыт в {{ r.yr }}</template></div>
+        <div class="meta">#{{ r.rank }}, {{ r.z }}<template v-if="r.yr">, открыт в {{ r.yr }}</template><template v-if="r.ry">, ремонт {{ r.ry }}</template></div>
         <Badges :row="r" :stop="stop" />
         <TcMarksBlock :tc="r.tc" quiet />
       </div>

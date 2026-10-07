@@ -76,6 +76,7 @@ watch(() => props.filters, () => {
       <button type="button" :aria-pressed="view === 'cards'" @click="view = 'cards'">Карточки</button>
     </div>
     <button class="link" type="button" @click="showMap = !showMap">{{ showMap ? 'Скрыть карту' : 'Показать карту' }}</button>
+    <span class="vcount" aria-live="polite">{{ view === 'table' ? 'В таблице' : 'Показано' }} <b>{{ list.length }}</b> из {{ data.rows.length }}<template v-if="filters.area"> · в обведённой области</template></span>
     <span class="rp-btns">
       <button type="button" class="rp-open" :class="{ busy: lastMine && isOpen(lastMine) }" @click="openReport()">
         Подробный отчёт по моим плюсам<b>{{ plusCount }}</b>
@@ -84,7 +85,7 @@ watch(() => props.filters, () => {
     </span>
   </div>
   <div :class="['hstack', view === 'cards' ? 'hs-cards' : 'hs-table']">
-    <HotelMap v-if="showMap" :rows="data.rows" :visible="visible" :stop="stop" :selected="selected" @select="select" />
+    <HotelMap v-if="showMap" :rows="data.rows" :visible="visible" :stop="stop" :selected="selected" :area="filters.area" @select="select" @area="(a) => (filters.area = a)" />
     <HotelsTable v-if="view === 'table'" :list="list" :stop="stop" :filters="filters" :selected="selected" @select="select" />
     <div v-else class="cards">
       <HotelCard v-for="r in list.slice(0, cardLimit)" :key="r.id" :r="r" :stop="stop" :selected="selected === r.id" />
