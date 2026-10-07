@@ -3,6 +3,7 @@ import { markRaw } from 'vue'
 import type { CityId, Hotel, Prices, Stop, StopRows, TripIndex } from '../lib/types'
 import { loadCity, loadIndex, loadPrices } from '../lib/data'
 import { buildRows } from '../lib/rows'
+import { marksStore } from '../lib/marks'
 import { type Filters, decodeFilters } from '../lib/filters'
 
 export const useTrip = defineStore('trip', {
@@ -20,7 +21,10 @@ export const useTrip = defineStore('trip', {
   },
   actions: {
     async init() {
-      try { this.index = markRaw(await loadIndex()) } catch (e) { this.error = String(e) }
+      try {
+        this.index = markRaw(await loadIndex())
+        marksStore.setMerges(Object.fromEntries(this.index.stops.filter((x) => x.merge?.length).map((x) => [x.id, x.merge!])))
+      } catch (e) { this.error = String(e) }
     },
     /** Загружает отели города и цены остановки, считает строки один раз. */
     async ensureStop(stop: Stop) {
