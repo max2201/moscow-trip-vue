@@ -7,6 +7,7 @@ import { ASC_FIRST } from '../lib/filters'
 import { plural } from '../lib/format'
 import HotelCells from './HotelCells.vue'
 import { useMarks } from '../composables/useMarks'
+import { headWidths, loadPins, pinCss, pinStyle, savePins } from '../lib/pins'
 
 const props = defineProps<{ list: Row[]; stop: Stop; filters: Filters; selected: number | null }>()
 const emit = defineEmits<{ select: [id: number] }>()
@@ -31,7 +32,6 @@ function sortBy(k: SortKey) {
 const box = ref<HTMLElement | null>(null)
 const table = ref<HTMLTableElement | null>(null)
 const headH = ref(52)
-const stickyLeft = ref<number[]>([0, 48, 88])
 const virt = useVirtualizer(computed(() => ({
   count: props.list.length,
   getScrollElement: () => box.value,
@@ -45,16 +45,20 @@ const padTop = computed(() => (items.value.length ? items.value[0].start - headH
 const padBottom = computed(() => (items.value.length ? virt.value.getTotalSize() - items.value[items.value.length - 1].end : 0))
 const measure = (el: unknown) => { if (el) virt.value.measureElement(el as Element) }
 
-// ---- закреплённые столбцы: меряем реальные размеры
+// ---- закреплённые столбцы: булавка в заголовке, положение считаем по реальным ширинам
+const pins = ref<string[]>(loadPins())
+const isPinned = (k: string) => pins.value.includes(k)
+function togglePin(k: string) {
+  pins.value = isPinned(k) ? pins.value.filter((x) => x !== k) : [...pins.value, k]
+  savePins(pins.value)
+  nextTick(remeasure)
+}
+const ps = pinStyle()
 let ro: ResizeObserver | null = null
 function remeasure() {
   const t = table.value
   if (!t) return
-  const th = t.querySelectorAll<HTMLElement>('thead th')
-  let l = 0
-  const lefts: number[] = []
-  for (let i = 0; i < 3; i++) { lefts.push(l); l += th[i]?.getBoundingClientRect().width ?? 0 }
-  stickyLeft.value = lefts
+  ps.set(pinCss(ps.scope, headWidths(t), COLS.map(([k]) => isPinned(k))))
   headH.value = Math.round(t.querySelector('thead')?.getBoundingClientRect().height ?? 52)
 }
 onMounted(() => {
@@ -62,7 +66,7 @@ onMounted(() => {
   if (table.value) ro.observe(table.value)
   remeasure()
 })
-onBeforeUnmount(() => ro?.disconnect())
+onBeforeUnmount(() => { ro?.disconnect(); ps.destroy() })
 
 watch(() => props.selected, async (id) => {
   if (id == null) return
@@ -72,7 +76,6 @@ watch(() => props.selected, async (id) => {
 // Наверх — только когда меняются фильтры или сортировка. Раньше тут следили за массивом [sort, dir, list.length]:
 // геттер возвращал новый массив при каждом пересчёте списка (в том числе после отметки), и таблица прыгала в начало.
 watch(() => props.filters, () => box.value?.scrollTo({ top: 0 }), { deep: true })
-const sticky = (i: number) => (i < 3 ? { left: stickyLeft.value[i] + 'px' } : undefined)
 const rowClass = (r: Row) => {
   version.value
   const m = store.mine(props.stop.id, r.id)
@@ -81,14 +84,18 @@ const rowClass = (r: Row) => {
 </script>
 
 <template>
-  <div ref="box" class="tablebox vtable">
+  <div ref="box" class="tablebox vtable" :data-pt="ps.id">
     <table ref="table">
       <thead>
         <tr>
-          <th v-for="([k, t, s], i) in COLS" :key="k" :class="[i < 3 ? 'sticky' : '', ['mkc', 'rank', 'name'][i] ?? '']" :style="sticky(i)"
+          <th v-for="([k, t, s], i) in COLS" :key="k" :class="['mkc', 'rank', 'name'][i] ?? ''"
               :aria-sort="filters.sort === k ? (filters.dir > 0 ? 'ascending' : 'descending') : undefined">
             <button type="button" @click="sortBy(k)">
               <span>{{ t }}<small v-if="s || k === 'night'">{{ k === 'night' ? nightsLabel : s }}</small></span><span class="arr">↕</span>
+            </button>
+            <button type="button" class="pinb" :aria-pressed="isPinned(k)" :title="isPinned(k) ? 'Открепить столбец' : 'Закрепить столбец: останется на виду при прокрутке вбок'"
+                    :aria-label="(isPinned(k) ? 'Открепить' : 'Закрепить') + ' столбец «' + t + '»'" @click="togglePin(k)">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1.5h4l-.6 4.2 2.6 2.3v1.3H8.7V15L8 15.8 7.3 15V9.3H4V8l2.6-2.3z"/></svg>
             </button>
           </th>
         </tr>
@@ -96,10 +103,10 @@ const rowClass = (r: Row) => {
       <tbody>
         <tr v-if="padTop > 0" class="spacer"><td :colspan="23" :style="{ height: padTop + 'px' }"></td></tr>
         <tr v-for="it in items" :key="it.key as number" :ref="measure" :data-index="it.index" :class="rowClass(list[it.index])" @click="emit('select', list[it.index].id)">
-          <HotelCells :r="list[it.index]" :stop="stop" :left="stickyLeft" />
+          <HotelCells :r="list[it.index]" :stop="stop" />
         </tr>
         <tr v-if="padBottom > 0" class="spacer"><td :colspan="23" :style="{ height: padBottom + 'px' }"></td></tr>
-        <tr v-if="!list.length"><td colspan="23" class="empty">Под эти фильтры ничего не подходит. Снимите один из фильтров или нажмите «Весь город».</td></tr>
+        <tr v-if="!list.length" class="emptyrow"><td colspan="23" class="empty">Под эти фильтры ничего не подходит. Снимите один из фильтров или нажмите «Весь город».</td></tr>
       </tbody>
     </table>
   </div>

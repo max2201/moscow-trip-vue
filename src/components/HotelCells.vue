@@ -9,14 +9,15 @@ import BriefBlock from './BriefBlock.vue'
 import FlagsBlock from './FlagsBlock.vue'
 import Badges from './Badges.vue'
 import TcMarksBlock from './TcMarksBlock.vue'
-defineProps<{ r: Row; stop: Stop; left: number[] }>()
+import { hoverHotel } from '../lib/hover'
+defineProps<{ r: Row; stop: Stop }>()
 </script>
 
 <!-- Ячейки одной строки: фрагмент из 23 <td>, строку <tr> рисует родитель. -->
 <template>
-  <td class="sticky mkc" :style="{ left: left[0] + 'px' }"><MarkButton :stop="stop.id" :id="r.id" /></td>
-  <td class="sticky rank" :style="{ left: left[1] + 'px' }">{{ r.rank }}</td>
-  <td class="sticky name" :style="{ left: left[2] + 'px' }">
+  <td class="mkc"><MarkButton :stop="stop.id" :id="r.id" /></td>
+  <td class="rank">{{ r.rank }}</td>
+  <td class="name" @mouseenter="hoverHotel.set(r.id)" @mouseleave="hoverHotel.set(null)">
     <a :href="tripLink(r.id, stop)" target="_blank" rel="noopener" @click.stop>{{ r.nm }}</a>
     <div class="meta">{{ r.z }}<template v-if="r.yr">, открыт в {{ r.yr }}</template></div>
     <Badges :row="r" :stop="stop" />

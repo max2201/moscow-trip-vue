@@ -50,7 +50,7 @@ function clearMarks(e: Event) {
   if (!n) { b.textContent = 'Отметок пока нет'; setTimeout(() => (b.textContent = 'Очистить мои отметки остановки'), 1500); return }
   if (armed) { store.clearStop(props.stop.id); armed = false; b.textContent = 'Очистить мои отметки остановки'; return }
   armed = true
-  b.textContent = `Точно удалить ${n} ${plural(n, 'отметку', 'отметки', 'отметок')}? Нажмите ещё раз`
+  b.textContent = `Точно удалить ${n} ${plural(n, 'отметку', 'отметки', 'отметок')}${props.stop.merge ? ' во всех отрезках' : ''}? Нажмите ещё раз`
   setTimeout(() => { if (armed) { armed = false; b.textContent = 'Очистить мои отметки остановки' } }, 4000)
 }
 const typeTitle = (t: string) => (TYPES.find((x) => x[0] === t)?.[1] ?? ['без указанного типа']).join(', ')

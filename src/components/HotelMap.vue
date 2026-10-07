@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import L from 'leaflet'
+import { hoverHotel, setPointHover } from '../lib/hover'
 import type { Row, Stop } from '../lib/types'
 import { scoreColor } from '../lib/format'
 import { boxStyle, canvasStyle, defaultMapSize, keyResize, loadMapSize, saveMapSize, startResize, type MapSize } from '../lib/mapsize'
@@ -113,6 +114,8 @@ function render() {
     // Отметка сменилась — точка пересоздана другим значком: подсказку выбранной открываем заново
     if (sel && created) { e.layer.openTooltip(); openTip = e.layer }
   }
+  const h = hoverHotel.get()
+  if (h != null) setPointHover(entries.get(h)?.layer, true, cssVar('--ink'))
   if (ring) {
     ring.setRadius(legend.value.r)
     if (isOn('ring')) { if (!map.hasLayer(ring)) ring.addTo(map) } else ring.remove()
@@ -158,6 +161,12 @@ onBeforeUnmount(() => {
   map?.remove(); map = null; group = null; ring = null; entries.clear()
 })
 
+// Наведение на название отеля в таблице: точка подрастает
+const offHover = hoverHotel.on((id, prev) => {
+  if (prev != null) setPointHover(entries.get(prev)?.layer, false, '')
+  if (id != null) setPointHover(entries.get(id)?.layer, true, cssVar('--ink'))
+})
+onBeforeUnmount(offHover)
 watch([() => props.visible, () => props.selected, version, legend], render)
 watch(() => props.selected, (id) => {
   openTip?.closeTooltip(); openTip = null
