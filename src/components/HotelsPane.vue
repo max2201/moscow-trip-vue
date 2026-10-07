@@ -6,10 +6,13 @@ import type { Filters } from '../lib/filters'
 import { applyFilters, encodeFilters } from '../lib/filters'
 import { useMarks } from '../composables/useMarks'
 import { useLegend } from '../composables/useLegend'
+import { useReports } from '../composables/useReports'
+import { isOpen, statusText } from '../lib/reports'
 import FiltersPanel from './FiltersPanel.vue'
 import HotelsTable from './HotelsTable.vue'
 import HotelCard from './HotelCard.vue'
 import HotelMap from './HotelMap.vue'
+import ReportDialog from './ReportDialog.vue'
 
 const props = defineProps<{ stop: Stop; data: StopRows; guide: Guide; filters: Filters }>()
 const { store, version } = useMarks()
@@ -44,6 +47,14 @@ async function select(id: number) {
   }
 }
 
+// Подробный отчёт по моим плюсам: кнопка показывает, сколько плюсов и как дела с последней заявкой.
+const { reports, rversion } = useReports(() => props.stop.id)
+const reportOpen = ref(false)
+const reportId = ref<string | null>(null)
+const plusCount = computed(() => (version.value, store.counts(props.stop.id).p))
+const lastMine = computed(() => (rversion.value, version.value, reports.docs.find((d) => d.name === store.myName) ?? null))
+function openReport(id: string | null = null) { reportId.value = id; reportOpen.value = true }
+
 // Фильтры → адрес страницы (?f=…), чтобы ссылкой можно было поделиться.
 let t: ReturnType<typeof setTimeout> | undefined
 watch(() => props.filters, () => {
@@ -65,6 +76,12 @@ watch(() => props.filters, () => {
       <button type="button" :aria-pressed="view === 'cards'" @click="view = 'cards'">Карточки</button>
     </div>
     <button class="link" type="button" @click="showMap = !showMap">{{ showMap ? 'Скрыть карту' : 'Показать карту' }}</button>
+    <span class="rp-btns">
+      <button type="button" class="rp-open" :class="{ busy: lastMine && isOpen(lastMine) }" @click="openReport()">
+        Подробный отчёт по моим плюсам<b>{{ plusCount }}</b>
+      </button>
+      <button v-if="lastMine && lastMine.status !== 'cancelled'" type="button" :class="['rp-chip', lastMine.status]" @click="openReport(lastMine.id)">отчёт {{ statusText(lastMine.status) }}</button>
+    </span>
   </div>
   <div :class="['hstack', view === 'cards' ? 'hs-cards' : 'hs-table']">
     <HotelMap v-if="showMap" :rows="data.rows" :visible="visible" :stop="stop" :selected="selected" @select="select" />
@@ -75,4 +92,5 @@ watch(() => props.filters, () => {
       <p v-if="!list.length" class="empty">Под эти фильтры ничего не подходит.</p>
     </div>
   </div>
+  <ReportDialog v-if="reportOpen" :stop="stop" :rows="data.rows" :open-id="reportId" @close="reportOpen = false" />
 </template>
