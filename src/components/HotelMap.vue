@@ -66,9 +66,20 @@ function makeLayer(r: Row, ll: L.LatLngTuple, mark: number, sel: boolean): L.Cir
     ? L.marker(ll, { icon: L.divIcon({ className: 'mpin-wrap', html: pinHtml(mark, colorOf(r), sel), iconSize: [22, 22], iconAnchor: [11, 11] }), keyboard: false, riseOnHover: true, zIndexOffset: mark === 1 ? 500 : 0 })
     : L.circleMarker(ll, { radius: r.anchor ? 9 : 6, weight: 1.5, color: '#fff', fillColor: colorOf(r), fillOpacity: 0.95 })
   layer.bindTooltip('')
-  layer.on('click', () => emit('select', r.id))
+  layer.on('click', () => onPointClick(r.id))
   return layer
 }
+
+// Первый клик по точке выделяет отель (как клик по строке таблицы), следующие клики по уже выделенной
+// точке переключают мою отметку: «+» → «−» → без отметки → снова «+».
+// Выделенную кликом по карте точку не двигаем к центру: она должна остаться под курсором для следующего клика.
+let fromMap = false
+function onPointClick(id: number) {
+  if (props.selected === id) store.cycle(props.stop.id, id)
+  else { fromMap = true; emit('select', id) }
+}
+// Подсказка открыта только у выбранного отеля: прежнюю закрываем, иначе они копятся на карте.
+let openTip: L.Layer | null = null
 
 function render() {
   if (!map || !group) return
@@ -79,19 +90,22 @@ function render() {
     const sel = props.selected === r.id
     const kind = mark ? `${mark}${sel ? 's' : ''}` : '0'
     let e = entries.get(r.id)
+    let created = false
     if (e && e.kind !== kind) { group.removeLayer(e.layer); entries.delete(r.id); e = undefined }
     if (!shownOnMap(r, mark, props.visible, off, props.selected)) {
       if (e?.on) { group.removeLayer(e.layer); e.on = false }
       continue
     }
-    if (!e) { e = { layer: makeLayer(r, [r.la, r.ln], mark, sel), kind, on: false }; entries.set(r.id, e) }
+    if (!e) { e = { layer: makeLayer(r, [r.la, r.ln], mark, sel), kind, on: false }; entries.set(r.id, e); created = true }
     if (!e.on) { group.addLayer(e.layer); e.on = true }
     if (e.layer instanceof L.CircleMarker) {
       e.layer.setStyle({ weight: sel ? 3 : 1.5, color: sel ? cssVar('--ink') : '#fff' })
       if (sel || r.anchor) e.layer.bringToFront()
     }
     const others = store.othersFor(props.stop.id, r.id).map(([u, v]) => [store.nameOf(u), v] as [string, number])
-    e.layer.setTooltipContent(tooltipHtml(r, mark, others))
+    e.layer.setTooltipContent(tooltipHtml(r, mark, others, sel))
+    // Отметка сменилась — точка пересоздана другим значком: подсказку выбранной открываем заново
+    if (sel && created) { e.layer.openTooltip(); openTip = e.layer }
   }
   if (ring) {
     ring.setRadius(legend.value.r)
@@ -129,12 +143,11 @@ onBeforeUnmount(() => {
 })
 
 watch([() => props.visible, () => props.selected, version, legend], render)
-// Подсказка открыта только у выбранного отеля: прежнюю закрываем, иначе они копятся на карте.
-let openTip: L.Layer | null = null
 watch(() => props.selected, (id) => {
   openTip?.closeTooltip(); openTip = null
   const e = id != null ? entries.get(id) : null
-  if (e && map) { map.panTo(e.layer.getLatLng()); e.layer.openTooltip(); openTip = e.layer }
+  if (e && map) { if (!fromMap) map.panTo(e.layer.getLatLng()); e.layer.openTooltip(); openTip = e.layer }
+  fromMap = false
 })
 </script>
 
