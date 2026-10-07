@@ -12,7 +12,6 @@ const emit = defineEmits<{ close: [] }>()
 const { reports, rversion } = useReports(() => props.stop.id)
 const { store, version } = useMarks()
 
-const MAX = 15
 // Мои плюсы на этой остановке + «наш» отель для сравнения (по умолчанию не выбран, если он не в плюсах).
 const plus = computed(() => (version.value, props.rows.filter((r) => store.mine(props.stop.id, r.id) === 1)))
 const choices = computed(() => {
@@ -28,13 +27,13 @@ const state = computed(() => (rversion.value, reports.state))
 const same = computed(() => (rversion.value, version.value, store.myName ? reports.findSame(picked.value, store.myName) : null))
 const current = ref<string | null>(props.openId ?? null)
 const doc = computed<ReportDoc | null>(() => docs.value.find((d) => d.id === current.value) ?? null)
-const report = computed(() => (doc.value ? reports.report(doc.value) : null))
+const report = computed(() => (rversion.value, doc.value ? reports.report(doc.value) : null)) // rversion: сжатый отчёт распаковывается в фоне
 const names = (d: ReportDoc) => d.hotels.map((id) => props.rows.find((r) => r.id === id)?.nm ?? `#${id}`)
 
 const name = ref('')
 const sending = ref(false)
 const sendErr = ref('')
-const canSend = computed(() => (version.value, store.mode === 'shared' && !store.needName && picked.value.length > 0 && picked.value.length <= MAX && !sending.value))
+const canSend = computed(() => (version.value, store.mode === 'shared' && !store.needName && picked.value.length > 0 && !sending.value))
 async function send() {
   if (!canSend.value || !store.myName) return
   sending.value = true; sendErr.value = ''
@@ -91,7 +90,6 @@ onBeforeUnmount(() => { document.removeEventListener('keydown', esc); document.b
                   <span>{{ r.nm }}</span><small>{{ [r.anchor ? '«наш» отель' : '', store.mine(stop.id, r.id) === 1 ? 'ваш плюс' : ''].filter(Boolean).join(', ') }}<template v-if="r.rv"> · {{ r.rv }} отз.</template></small></label>
               </li>
             </ul>
-            <p v-if="picked.length > MAX" class="rp-err">Не больше {{ MAX }} отелей в одном отчёте.</p>
             <div v-if="same && isOpen(same)" class="rp-same">По этим отелям отчёт уже {{ statusText(same.status) }}. <button type="button" class="link" @click="current = same.id">Посмотреть</button></div>
             <div v-else class="rp-actions">
               <button type="button" class="who-ok" :disabled="!canSend" @click="send">{{ sending ? 'Отправляю…' : `Заказать отчёт · ${picked.length} ${plural(picked.length, 'отель', 'отеля', 'отелей')}` }}</button>
