@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
-        name: 'Таиланд, 6–26 декабря',
-        short_name: 'Таиланд 2026',
-        description: 'Маршрут, отели, районы и события поездки',
+        name: 'Москва, 14–22 октября',
+        short_name: 'Москва 2026',
+        description: 'Жильё, районы и события поездки в Москву',
         lang: 'ru',
         theme_color: '#C8105F',
         background_color: '#F3F4F6',
