@@ -7,9 +7,9 @@ import { ASC_FIRST } from '../lib/filters'
 import { plural } from '../lib/format'
 import HotelCells from './HotelCells.vue'
 import { useMarks } from '../composables/useMarks'
-import { headWidths, loadPins, pinCss, pinStyle, savePins } from '../lib/pins'
+import { headWidths, loadPins, loadRowPins, pinCss, pinStyle, rowTops, saveRowPins, savePins } from '../lib/pins'
 
-const props = defineProps<{ list: Row[]; stop: Stop; filters: Filters; selected: number | null }>()
+const props = defineProps<{ list: Row[]; all: Row[]; stop: Stop; filters: Filters; selected: number | null }>()
 const emit = defineEmits<{ select: [id: number] }>()
 const { store, version } = useMarks()
 
@@ -32,16 +32,29 @@ function sortBy(k: SortKey) {
 const box = ref<HTMLElement | null>(null)
 const table = ref<HTMLTableElement | null>(null)
 const headH = ref(52)
+
+// ---- закреплённые строки: всегда сверху под заголовком, при любых фильтрах; остальные — ниже, без них
+const rowPins = ref<number[]>(loadRowPins(props.stop.id))
+watch(() => props.stop.id, (id) => { rowPins.value = loadRowPins(id) })
+const pinnedRows = computed(() => { const by = new Map(props.all.map((r) => [r.id, r])); return rowPins.value.map((id) => by.get(id)).filter((r): r is Row => !!r) })
+const body = computed(() => { const p = new Set(rowPins.value); return p.size ? props.list.filter((r) => !p.has(r.id)) : props.list })
+const pinTops = ref<number[]>([])
+const pinH = ref(0)
+function toggleRow(id: number) {
+  rowPins.value = rowPins.value.includes(id) ? rowPins.value.filter((x) => x !== id) : [...rowPins.value, id]
+  saveRowPins(props.stop.id, rowPins.value)
+  nextTick(remeasure)
+}
 const virt = useVirtualizer(computed(() => ({
-  count: props.list.length,
+  count: body.value.length,
   getScrollElement: () => box.value,
   estimateSize: () => 190,
   overscan: 6,
-  paddingStart: headH.value,
-  getItemKey: (i: number) => props.list[i]?.id ?? i,
+  paddingStart: headH.value + pinH.value,
+  getItemKey: (i: number) => body.value[i]?.id ?? i,
 })))
 const items = computed(() => virt.value.getVirtualItems())
-const padTop = computed(() => (items.value.length ? items.value[0].start - headH.value : 0))
+const padTop = computed(() => (items.value.length ? items.value[0].start - headH.value - pinH.value : 0))
 const padBottom = computed(() => (items.value.length ? virt.value.getTotalSize() - items.value[items.value.length - 1].end : 0))
 const measure = (el: unknown) => { if (el) virt.value.measureElement(el as Element) }
 
@@ -60,6 +73,9 @@ function remeasure() {
   if (!t) return
   ps.set(pinCss(ps.scope, headWidths(t), COLS.map(([k]) => isPinned(k))))
   headH.value = Math.round(t.querySelector('thead')?.getBoundingClientRect().height ?? 52)
+  const { tops, total } = rowTops(headH.value, Array.from(t.querySelectorAll<HTMLElement>('tbody tr.pinrow')).map((tr) => tr.getBoundingClientRect().height))
+  if (tops.join() !== pinTops.value.join()) pinTops.value = tops
+  if (total !== pinH.value) pinH.value = total
 }
 onMounted(() => {
   ro = new ResizeObserver(remeasure)
@@ -70,7 +86,7 @@ onBeforeUnmount(() => { ro?.disconnect(); ps.destroy() })
 
 watch(() => props.selected, async (id) => {
   if (id == null) return
-  const i = props.list.findIndex((r) => r.id === id)
+  const i = body.value.findIndex((r) => r.id === id)
   if (i >= 0) { await nextTick(); virt.value.scrollToIndex(i, { align: 'center' }) }
 })
 // Наверх — только когда меняются фильтры или сортировка. Раньше тут следили за массивом [sort, dir, list.length]:
@@ -101,12 +117,16 @@ const rowClass = (r: Row) => {
         </tr>
       </thead>
       <tbody>
+        <tr v-for="(r, i) in pinnedRows" :key="'p' + r.id" :class="[...rowClass(r), 'pinrow', i === pinnedRows.length - 1 ? 'plast' : '']"
+            :style="{ '--pt': (pinTops[i] ?? headH) + 'px' }" @click="emit('select', r.id)">
+          <HotelCells :r="r" :stop="stop" :row-pinned="true" @pin="toggleRow(r.id)" />
+        </tr>
         <tr v-if="padTop > 0" class="spacer"><td :colspan="23" :style="{ height: padTop + 'px' }"></td></tr>
-        <tr v-for="it in items" :key="it.key as number" :ref="measure" :data-index="it.index" :class="rowClass(list[it.index])" @click="emit('select', list[it.index].id)">
-          <HotelCells :r="list[it.index]" :stop="stop" />
+        <tr v-for="it in items" :key="it.key as number" :ref="measure" :data-index="it.index" :class="rowClass(body[it.index])" @click="emit('select', body[it.index].id)">
+          <HotelCells :r="body[it.index]" :stop="stop" :row-pinned="false" @pin="toggleRow(body[it.index].id)" />
         </tr>
         <tr v-if="padBottom > 0" class="spacer"><td :colspan="23" :style="{ height: padBottom + 'px' }"></td></tr>
-        <tr v-if="!list.length" class="emptyrow"><td colspan="23" class="empty">Под эти фильтры ничего не подходит. Снимите один из фильтров или нажмите «Весь город».</td></tr>
+        <tr v-if="!body.length" class="emptyrow"><td colspan="23" class="empty">Под эти фильтры ничего не подходит. Снимите один из фильтров или нажмите «Весь город».</td></tr>
       </tbody>
     </table>
   </div>

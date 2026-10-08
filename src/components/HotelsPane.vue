@@ -86,7 +86,7 @@ watch(() => props.filters, () => {
   </div>
   <div :class="['hstack', view === 'cards' ? 'hs-cards' : 'hs-table']">
     <HotelMap v-if="showMap" :rows="data.rows" :visible="visible" :stop="stop" :selected="selected" :area="filters.area" @select="select" @area="(a) => (filters.area = a)" />
-    <HotelsTable v-if="view === 'table'" :list="list" :stop="stop" :filters="filters" :selected="selected" @select="select" />
+    <HotelsTable v-if="view === 'table'" :list="list" :all="data.rows" :stop="stop" :filters="filters" :selected="selected" @select="select" />
     <div v-else class="cards">
       <HotelCard v-for="r in list.slice(0, cardLimit)" :key="r.id" :r="r" :stop="stop" :selected="selected === r.id" />
       <button v-if="list.length > cardLimit" class="more" type="button" @click="cardLimit += 40">Показать ещё {{ Math.min(40, list.length - cardLimit) }}</button>

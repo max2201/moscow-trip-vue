@@ -41,7 +41,17 @@ async function send() {
   catch (e) { sendErr.value = errorText((e as { code?: string }).code || String(e)) }
   finally { sending.value = false }
 }
+// Отмена в два нажатия: первое спрашивает «точно?», второе отменяет. Отменить можно и заявку в работе —
+// обработчик проверяет статус между шагами и бросает её (см. REPORTS.md в thailand-trip-pipeline).
+const armed = ref<string | null>(null)
+let armTimer: ReturnType<typeof setTimeout> | undefined
 async function cancel(d: ReportDoc) {
+  if (armed.value !== d.id) {
+    armed.value = d.id
+    clearTimeout(armTimer); armTimer = setTimeout(() => (armed.value = null), 5000)
+    return
+  }
+  armed.value = null
   try { await reports.cancel(d.id); if (current.value === d.id) current.value = null }
   catch (e) { sendErr.value = errorText((e as { code?: string }).code || String(e)) }
 }
@@ -71,7 +81,11 @@ onBeforeUnmount(() => { document.removeEventListener('keydown', esc); document.b
           <p v-else-if="doc.status === 'queued'" class="rp-note">Заявку возьмут в работу в течение минуты.</p>
           <p class="rp-note">{{ names(doc).join(', ') }}</p>
           <p class="rp-note">{{ DUTY_TEXT }}</p>
-          <button v-if="doc.status === 'queued' && doc.name === store.myName" type="button" class="link" @click="cancel(doc)">отменить заявку</button>
+          <div v-if="isOpen(doc)" class="rp-cancel">
+            <button type="button" :class="['rp-cancel-b', armed === doc.id ? 'armed' : '']" @click="cancel(doc)">{{ armed === doc.id ? 'Точно отменить? Нажмите ещё раз' : 'Отменить заявку' }}</button>
+            <span v-if="doc.status === 'working'" class="rp-note">Обработчик заметит отмену на ближайшем шаге и остановится — лимиты на этот отчёт больше не тратятся. Готовые части не сохранятся.</span>
+            <p v-if="sendErr" class="rp-err">{{ sendErr }}</p>
+          </div>
         </div>
 
         <template v-else>
