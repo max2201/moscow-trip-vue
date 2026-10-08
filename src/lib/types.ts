@@ -1,4 +1,4 @@
-export type CityId = 'bkk' | 'cm' | 'cr' | 'pt'
+export type CityId = 'msk'
 export type Level = '' | 'fw' | 'fb'
 export type Mark = 1 | -1
 
@@ -6,17 +6,17 @@ export type Mark = 1 | -1
 export interface Hotel {
   id: number
   nm: string            // название
-  cat: string           // тип на trip.com
+  cat: string           // тип жилья
   st: number            // звёзды
   z: string             // район
   la: number | null
   ln: number | null
-  sc: number | null     // оценка trip.com
+  sc: number | null     // оценка гостей Островка
   cl: number | null     // чистота
   fa: number | null     // удобства
   lo: number | null     // расположение
   se: number | null     // сервис
-  rv: number            // отзывов на trip.com
+  rv: number            // отзывов на Островке
   an: number            // прочитано отзывов
   tot: number
   ng: number | null     // % негатива
@@ -31,7 +31,8 @@ export interface Hotel {
   ry?: string          // год последнего ремонта
   pr: string[]; co: string[] // плюсы / минусы
   cp: [number, number, number, number, number] | null // база, флаги, негатив, динамика, мало отзывов
-  sv?: number           // в сохранённых на trip.com
+  sv?: number           // в сохранённых
+  o?: string            // код отеля на Островке (для ссылки)
   fx?: string[]         // чем известен
   rf?: string[]         // осторожно
   lc?: string           // где

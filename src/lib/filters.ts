@@ -26,7 +26,7 @@ export const FLAG_LABELS: [FlagKey, string][] = [
   ['noinsect', 'Без насекомых'], ['nosmell', 'Без запаха и сырости'], ['nodorm', 'Скрыть койки'],
   ['ownbath', 'Свой санузел'], ['balcony', 'С балконом'], ['balroom', 'Балкон в самом дешёвом номере'],
   ['free', 'Бесплатная отмена'], ['gem', 'Только находки'], ['inradius', 'Только в радиусе'], ['plusonly', 'Только с моим плюсом'],
-  ['anyplus', 'Плюс у кого-то из нас'], ['hideminus', 'Скрыть с минусом'], ['saved', 'Мои сохранённые на trip.com'],
+  ['anyplus', 'Плюс у кого-то из нас'], ['hideminus', 'Скрыть с минусом'], ['saved', 'Сохранённые'],
 ]
 export const ASC_FIRST: SortKey[] = ['mark', 'km', 'night', 'rank', 'name', 'free', 'ng', 'ns', 'flag']
 

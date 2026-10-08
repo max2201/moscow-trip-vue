@@ -79,13 +79,9 @@ export function buildRows(stop: Stop, hotels: Hotel[], prices: Prices): StopRows
 /** Сколько ехать до «нашего» отеля. */
 export function travel(km: number | null, stop: Stop, r: { ln: number | null }) {
   if (km == null) return ''
-  const island = stop.city === 'pt' && stop.alng < 100.83
+  void stop; void r
   if (km <= 1.2) return `≈${Math.max(1, Math.round(km * 16))} мин пешком`
-  if (island && (r.ln ?? 0) < 100.83) return `≈${Math.round((km * 1.4) / 20 * 60 + 2)} мин на мопеде`
-  if (island) return 'другой берег: паром или катер'
-  if (stop.city === 'bkk') return `≈${Math.round((km * 1.4) / 14 * 60 + 4)} мин на такси`
-  if (stop.city === 'pt') return `≈${Math.round((km * 1.3) / 20 * 60 + 3)} мин на такси или сонгтэо`
-  return `≈${Math.round((km * 1.3) / 22 * 60 + 3)} мин на Grab`
+  return `≈${Math.round(km * 2.2 + 8)} мин на метро`
 }
 
 export interface Brief { known: string[]; warn: string[]; reputation: 'ok' | 'few' | null; where: string; anchorLine: string }
@@ -97,10 +93,7 @@ export function brief(r: Row, stop: Stop): Brief {
   if (r.insLvl === 'fb') warn.unshift(`часто пишут о насекомых — ${n(r.ins)}`)
   if (r.smLvl === 'fb') warn.unshift(`часто пишут о запахе — ${n(r.sm)}`)
   if (r.dmLvl === 'fb') warn.unshift(`часто пишут о сырости — ${n(r.dm)}`)
-  const together = stop.anchor === stop.proposed
-  const anchorLine = r.km == null ? '' : r.km < 0.05
-    ? `Это и есть ${together ? 'ваш отель по плану' : '«наш отель»'}.`
-    : `До ${together ? 'вашего отеля по плану' : '«нашего отеля»'}: ${kmText(r.km)}, ${travel(r.km, stop, r)}.`
+  const anchorLine = r.km == null ? '' : `До ${stop.anchorName === 'Красная площадь' ? 'Красной площади' : stop.anchorName}: ${kmText(r.km)}, ${travel(r.km, stop, r)}.`
   return {
     known: r.fx || [],
     warn: warn.slice(0, 4),
@@ -160,5 +153,8 @@ export function consList(r: Row) {
   return c
 }
 
-export const tripLink = (id: number, stop: Stop) =>
-  `https://ru.trip.com/hotels/detail/?hotelId=${id}&checkIn=${stop.ci}&checkOut=${stop.co}&adult=2&crn=1&curr=RUB&locale=ru-RU`
+const ruDate = (d: string) => d.split('-').reverse().join('.')
+/** Ссылка на отель на Островке с датами поездки (o — код отеля, из данных). */
+export const tripLink = (id: number, stop: Stop, o?: string) =>
+  o ? `https://ostrovok.ru/hotel/russia/moscow/mid${id}/${o}/?dates=${ruDate(stop.ci)}-${ruDate(stop.co)}&guests=2`
+    : `https://ostrovok.ru/hotel/russia/moscow/?dates=${ruDate(stop.ci)}-${ruDate(stop.co)}&guests=2`
