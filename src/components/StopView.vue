@@ -19,7 +19,7 @@ const loading = ref(true)
 const error = ref('')
 
 watch(s, async (stop) => {
-  if (!stop) { router.replace('/s1'); return }
+  if (!stop) { router.replace('/' + (trip.stops[0]?.id ?? '')); return }
   loading.value = true; error.value = ''
   try { await trip.ensureStop(stop); trip.filtersFor(stop, (route.query.f as string) ?? null) }
   catch (e) { error.value = String(e) }
@@ -45,12 +45,12 @@ function showZone(z: string) {
   <main v-if="s" class="stop">
     <div class="shead"><div>
       <h2><span :class="['cityline', 'c-' + s.city]"></span>{{ s.title }}: {{ s.sub }}</h2>
-      <div class="sub">{{ s.days }}, {{ s.nights }} {{ plural(s.nights, 'ночь', 'ночи', 'ночей') }}{{ s.together ? ', вместе' : ', живёте раздельно' }}. В таблице — все отели города до {{ fmt(s.limit) }} ₽ за ночь</div>
+      <div class="sub">{{ s.days }}, {{ s.nights }} {{ plural(s.nights, 'ночь', 'ночи', 'ночей') }}{{ s.together ? ', вместе' : ', живёте раздельно' }}. В таблице — жильё с Островка до {{ fmt(s.limit) }} ₽ за ночь</div>
     </div></div>
     <div v-if="error" class="err">Не удалось загрузить данные: {{ error }}</div>
     <div v-else-if="loading || !data || !guide || !filters" class="loading">Загружаю отели…</div>
     <template v-else>
-      <div class="planned">
+      <div v-if="s.anchor" class="planned">
         <PlanCard v-if="s.anchor === s.proposed" :stop="s" :data="data" :id="s.anchor" who="Отель по плану — от него считаются расстояния" />
         <template v-else>
           <PlanCard :stop="s" :data="data" :id="s.proposed" who="Предложен вам в плане" />

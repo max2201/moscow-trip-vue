@@ -53,6 +53,8 @@ const reportOpen = ref(false)
 const reportId = ref<string | null>(null)
 const plusCount = computed(() => (version.value, store.counts(props.stop.id).p))
 const lastMine = computed(() => (rversion.value, version.value, reports.docs.find((d) => d.name === store.myName) ?? null))
+// Подробные отчёты (Claude читает отзывы по заявке) в московской версии пока выключены
+const REPORTS_ON = false
 function openReport(id: string | null = null) { reportId.value = id; reportOpen.value = true }
 
 // Фильтры → адрес страницы (?f=…), чтобы ссылкой можно было поделиться.
@@ -78,10 +80,10 @@ watch(() => props.filters, () => {
     <button class="link" type="button" @click="showMap = !showMap">{{ showMap ? 'Скрыть карту' : 'Показать карту' }}</button>
     <span class="vcount" aria-live="polite">{{ view === 'table' ? 'В таблице' : 'Показано' }} <b>{{ list.length }}</b> из {{ data.rows.length }}<template v-if="filters.area"> · в обведённой области</template></span>
     <span class="rp-btns">
-      <button type="button" class="rp-open" :class="{ busy: lastMine && isOpen(lastMine) }" @click="openReport()">
+      <template v-if="REPORTS_ON"><button type="button" class="rp-open" :class="{ busy: lastMine && isOpen(lastMine) }" @click="openReport()">
         Подробный отчёт по моим плюсам<b>{{ plusCount }}</b>
       </button>
-      <button v-if="lastMine && lastMine.status !== 'cancelled'" type="button" :class="['rp-chip', lastMine.status]" @click="openReport(lastMine.id)">отчёт {{ statusText(lastMine.status) }}</button>
+      <button v-if="lastMine && lastMine.status !== 'cancelled'" type="button" :class="['rp-chip', lastMine.status]" @click="openReport(lastMine.id)">отчёт {{ statusText(lastMine.status) }}</button></template>
     </span>
   </div>
   <div :class="['hstack', view === 'cards' ? 'hs-cards' : 'hs-table']">

@@ -8,19 +8,18 @@ import SubBar from './SubBar.vue'
 import BriefBlock from './BriefBlock.vue'
 import FlagsBlock from './FlagsBlock.vue'
 import Badges from './Badges.vue'
-import TcMarksBlock from './TcMarksBlock.vue'
 import { hoverHotel } from '../lib/hover'
 defineProps<{ r: Row; stop: Stop; rowPinned?: boolean }>()
 const emit = defineEmits<{ pin: [] }>()
 </script>
 
-<!-- Ячейки одной строки: фрагмент из 23 <td>, строку <tr> рисует родитель. -->
+<!-- Ячейки одной строки: фрагмент из 20 <td>, строку <tr> рисует родитель. -->
 <template>
   <td class="mkc"><MarkButton :stop="stop.id" :id="r.id" /></td>
   <td class="rank">{{ r.rank }}<button type="button" class="rpin" :aria-pressed="!!rowPinned" :title="rowPinned ? 'Открепить строку' : 'Закрепить строку: останется сверху таблицы при прокрутке и при любых фильтрах'"
       :aria-label="(rowPinned ? 'Открепить' : 'Закрепить') + ' строку «' + r.nm + '»'" @click.stop="emit('pin')"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1.5h4l-.6 4.2 2.6 2.3v1.3H8.7V15L8 15.8 7.3 15V9.3H4V8l2.6-2.3z"/></svg></button></td>
   <td class="name" @mouseenter="hoverHotel.set(r.id)" @mouseleave="hoverHotel.set(null)">
-    <a :href="tripLink(r.id, stop)" target="_blank" rel="noopener" @click.stop>{{ r.nm }}</a>
+    <a :href="tripLink(r.id, stop, r.o)" target="_blank" rel="noopener" @click.stop>{{ r.nm }}</a>
     <div class="meta">{{ r.z }}<template v-if="r.yr">, открыт в {{ r.yr }}</template></div>
     <Badges :row="r" :stop="stop" />
     <div class="meta">{{ r.room }}</div>
@@ -35,7 +34,6 @@ const emit = defineEmits<{ pin: [] }>()
   <td><ul class="pc cons"><li v-for="x in consList(r)" :key="x">{{ x }}</li></ul></td>
   <td><FlagsBlock :row="r" /></td>
   <td class="num"><b>{{ dec1(r.sc) }}</b><div class="sub2">{{ fmt(r.rv) }} отзывов</div></td>
-  <td><TcMarksBlock :tc="r.tc" /></td>
   <td><SubBar :v="r.cl" /></td>
   <td><SubBar :v="r.fa" /></td>
   <td><SubBar :v="r.lo" /></td>
@@ -45,8 +43,6 @@ const emit = defineEmits<{ pin: [] }>()
     <div class="sub2" style="margin-top:4px">всего {{ r.amn }}</div>
   </td>
   <td style="white-space:nowrap;font-size:13px">{{ r.tg }}<div v-if="r.cat && r.cat !== 'Отель' && r.cat !== r.tg" class="sub2">{{ r.cat }}</div><div style="color:var(--warn)">{{ r.st ? '★'.repeat(r.st) : '' }}<span v-if="!r.st" class="sub2">без звёзд</span></div></td>
-  <td class="num">{{ r.yr || '—' }}</td>
-  <td class="num">{{ r.ry || '—' }}</td>
   <td class="num">{{ r.ng == null ? '—' : dec(r.ng) + '%' }}</td>
   <td class="num">{{ r.ns == null ? '—' : dec(r.ns) + '%' }}</td>
 </template>

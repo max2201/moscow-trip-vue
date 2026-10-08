@@ -13,8 +13,8 @@ const cards = computed(() => [...props.guide.districts]
   .map((d, i) => ({ d, n: i + 1, st: zoneStats(props.data.rows, [d.t]), prio: props.stop.prio.includes(d.t) })))
 const cleanCls = (v: number | null) => (v == null ? '' : v >= cc.value + 8 ? 't-g' : v <= cc.value - 8 ? 't-b' : '')
 // Районы на карте — области по отелям их зон
-const items = computed<PlaceItem[]>(() => cards.value.map(({ d, n, prio }) => ({ id: d.t, n, name: d.t, area: districtArea(props.data.rows, [d.t, ...d.z]) ?? undefined, prio })))
-const anchor = computed(() => (props.stop.alat ? { ll: [props.stop.alat, props.stop.alng] as [number, number], name: 'Отель по плану: ' + props.stop.anchorName } : null))
+const items = computed<PlaceItem[]>(() => cards.value.map(({ d, n, prio }) => ({ id: d.t, n, name: d.t, area: d.z.length ? districtArea(props.data.rows, [d.t, ...d.z]) ?? undefined : undefined, prio })))
+const anchor = computed(() => (props.stop.alat ? { ll: [props.stop.alat, props.stop.alng] as [number, number], name: props.stop.anchor ? 'Отель по плану: ' + props.stop.anchorName : props.stop.anchorName } : null))
 const hover = ref<string | null>(null)
 </script>
 <template>

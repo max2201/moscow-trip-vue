@@ -15,11 +15,11 @@ const { store, version } = useMarks()
 
 const COLS: [SortKey, string, string][] = [
   ['mark', '±', ''], ['rank', '#', ''], ['name', 'Отель', ''], ['my', 'Моя оценка', 'из 10'],
-  ['night', 'Цена за ночь', ''], ['free', 'Отмена', ''], ['km', 'До «нашего» отеля', 'по прямой'],
+  ['night', 'Цена за ночь', ''], ['free', 'Отмена', ''], ['km', 'До Красной площади', 'по прямой'],
   ['brief', 'Коротко об отеле', 'чем известен, осторожно, где'], ['pr', 'Хвалят', ''], ['co', 'Жалуются', ''],
-  ['flag', 'Красные флаги', 'отзывов с упоминанием'], ['sc', 'Trip.com', 'оценка, отзывов'], ['tcm', 'Отметки Trip.com', 'значки, рейтинги, акции'],
+  ['flag', 'Красные флаги', 'отзывов с упоминанием'], ['sc', 'Островок', 'оценка, отзывов'],
   ['cl', 'Чистота', ''], ['fa', 'Удобства', 'оценка гостей'], ['lo', 'Расположение', ''], ['se', 'Сервис', ''],
-  ['amn', 'Что есть в отеле', ''], ['st', 'Тип', 'и звёзды'], ['yr', 'Открыт', 'год'], ['ry', 'Ремонт', 'год последнего'], ['ng', 'Негатив', 'оценки 6 и ниже'], ['ns', 'Шум', 'доля отзывов'],
+  ['amn', 'Что есть в отеле', ''], ['st', 'Тип', 'и звёзды'], ['ng', 'Негатив', 'оценки 6 и ниже'], ['ns', 'Шум', 'доля отзывов'],
 ]
 const nightsLabel = computed(() => `за ${props.stop.nights} ${plural(props.stop.nights, 'ночь', 'ночи', 'ночей')} ниже`)
 
@@ -121,12 +121,12 @@ const rowClass = (r: Row) => {
             :style="{ '--pt': (pinTops[i] ?? headH) + 'px' }" @click="emit('select', r.id)">
           <HotelCells :r="r" :stop="stop" :row-pinned="true" @pin="toggleRow(r.id)" />
         </tr>
-        <tr v-if="padTop > 0" class="spacer"><td :colspan="23" :style="{ height: padTop + 'px' }"></td></tr>
+        <tr v-if="padTop > 0" class="spacer"><td :colspan="20" :style="{ height: padTop + 'px' }"></td></tr>
         <tr v-for="it in items" :key="it.key as number" :ref="measure" :data-index="it.index" :class="rowClass(body[it.index])" @click="emit('select', body[it.index].id)">
           <HotelCells :r="body[it.index]" :stop="stop" :row-pinned="false" @pin="toggleRow(body[it.index].id)" />
         </tr>
-        <tr v-if="padBottom > 0" class="spacer"><td :colspan="23" :style="{ height: padBottom + 'px' }"></td></tr>
-        <tr v-if="!body.length" class="emptyrow"><td colspan="23" class="empty">Под эти фильтры ничего не подходит. Снимите один из фильтров или нажмите «Весь город».</td></tr>
+        <tr v-if="padBottom > 0" class="spacer"><td :colspan="20" :style="{ height: padBottom + 'px' }"></td></tr>
+        <tr v-if="!body.length" class="emptyrow"><td colspan="20" class="empty">Под эти фильтры ничего не подходит. Снимите один из фильтров или нажмите «Весь город».</td></tr>
       </tbody>
     </table>
   </div>

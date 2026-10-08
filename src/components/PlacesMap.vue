@@ -23,6 +23,6 @@ onBeforeUnmount(() => { ro?.disconnect(); pm?.destroy(); pm = null })
 <template>
   <aside class="pmap">
     <div ref="el" class="pmap-canvas"></div>
-    <p class="pmap-note"><span class="pm-dot"></span>номер на карте = номер карточки · <span class="pm-home-k"></span>отель по плану</p>
+    <p class="pmap-note"><span class="pm-dot"></span>номер на карте = номер карточки · <span class="pm-home-k"></span>Красная площадь</p>
   </aside>
 </template>

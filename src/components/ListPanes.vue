@@ -11,7 +11,7 @@ const places = computed(() => props.index.places?.[props.stop.city]?.[props.kind
 const names = computed(() => (props.kind === 'sights' ? sights.value.map((s) => s[0]) : props.kind === 'trips' ? props.guide.trips.map((t) => t[0]) : props.stop.events.map((e) => e[1])))
 const nums = computed(() => { const m: Record<string, number> = {}; let n = 0; for (const nm of names.value) if (places.value[nm] && !(nm in m)) m[nm] = ++n; return m })
 const items = computed<PlaceItem[]>(() => Object.entries(nums.value).map(([nm, n]) => ({ id: nm, n, name: nm, ll: places.value[nm], prio: props.kind === 'sights' && props.stop.prio.includes(sights.value.find((s) => s[0] === nm)?.[1] ?? '') })))
-const anchor = computed(() => (props.stop.alat ? { ll: [props.stop.alat, props.stop.alng] as [number, number], name: 'Отель по плану: ' + props.stop.anchorName } : null))
+const anchor = computed(() => (props.stop.alat ? { ll: [props.stop.alat, props.stop.alng] as [number, number], name: props.stop.anchor ? 'Отель по плану: ' + props.stop.anchorName : props.stop.anchorName } : null))
 const hover = ref<string | null>(null)
 const on = (id: string) => ({ 'data-place': id, onMouseenter: () => (hover.value = id), onMouseleave: () => (hover.value = null) })
 </script>

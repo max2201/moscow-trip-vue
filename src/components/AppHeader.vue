@@ -12,8 +12,8 @@ function toggleTheme() {
 <template>
   <div class="top">
     <div>
-      <h1>Таиланд, 6–26 декабря</h1>
-      <p class="lede">Маршрут из вашего плана: 7 остановок, 20 ночей. Для каждой — все отели города до 5&nbsp;000&nbsp;₽ за ночь на ваши даты (в Чиангмае — до 7&nbsp;000&nbsp;₽), разбор отзывов, районы, что посмотреть, куда съездить за 2 часа и что будет происходить в эти дни.<template v-if="trip.index"> Всего прочитано <b>{{ fmt(trip.index.reviews) }} отзывов</b>.</template></p>
+      <h1>Москва, 14–22 октября</h1>
+      <p class="lede">8 ночей в Москве. Всё жильё с Островка до 8&nbsp;000&nbsp;₽ за ночь на ваши даты не дальше 12&nbsp;км от Красной площади, разбор отзывов гостей, районы, что посмотреть, куда съездить за 2 часа и что будет происходить в эти дни.<template v-if="trip.index"> Всего прочитано <b>{{ fmt(trip.index.reviews) }} отзывов</b>.</template></p>
     </div>
     <div class="top-right"><span class="fw-badge">Vue 3</span><button class="theme" type="button" @click="toggleTheme">Тема</button></div>
   </div>

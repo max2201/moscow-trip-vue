@@ -140,6 +140,9 @@ onMounted(() => {
   }).addTo(map)
   ring = L.circle([props.stop.alat, props.stop.alng], { radius: legend.value.r, color: cssVar('--accent'), weight: 1.5, dashArray: '6 6', fill: false, interactive: false })
   group = L.layerGroup().addTo(map)
+  // Точка отсчёта (у Москвы — Красная площадь, не отель): рисуем отдельной меткой
+  if (!props.stop.anchor) L.circleMarker([props.stop.alat, props.stop.alng], { radius: 9, weight: 3, color: '#fff', fillColor: cssVar('--ink'), fillOpacity: 1, interactive: true })
+    .bindTooltip(props.stop.anchorName, { direction: 'top' }).addTo(map)
   render()
   lasso = attachLasso(map, cssVar('--accent'), (a) => emit('area', a), (on) => (lassoOn.value = on))
   showArea()
@@ -202,11 +205,11 @@ watch(() => props.selected, (id) => {
           </label>
           <span class="lgsep" aria-hidden="true"></span>
           <button type="button" class="lgc" :aria-pressed="isOn('anchor')" @click="toggle('anchor')">
-            <i class="lgdot lgbig" style="background:var(--ink)"></i><span class="lgl">«наш» отель</span>
+            <i class="lgdot lgbig" style="background:var(--ink)"></i><span class="lgl">Красная площадь</span>
           </button>
           <span class="lgring">
             <button type="button" class="lgc" :aria-pressed="isOn('ring')" @click="toggle('ring')"><i class="lgcirc"></i><span class="lgl">радиус</span></button>
-            <input type="range" :min="R_MIN" :max="R_MAX" :step="R_STEP" :value="legend.r" aria-label="Радиус круга вокруг «нашего» отеля" @input="onRadius">
+            <input type="range" :min="R_MIN" :max="R_MAX" :step="R_STEP" :value="legend.r" aria-label="Радиус круга вокруг Красной площади" @input="onRadius">
             <input class="lgnum" type="text" inputmode="decimal" :value="radiusText(legend.r)" aria-label="Радиус текстом, например 1,5 или 800 м"
                    title="Можно ввести: 1,5 · 1.5 км · 800 · 800 м (от 100 м до 5 км)" @focus="($event.target as HTMLInputElement).select()" @change="onRadiusText" @keydown="onRadiusKey">
           </span>

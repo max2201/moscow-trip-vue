@@ -31,8 +31,8 @@ const flagCount = (k: FlagKey) => (k === 'inradius' ? radiusText(legend.value.r)
 
 const toggle = (arr: string[], v: string) => { const i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); else arr.push(v) }
 const RANGES: [RangeKey, RangeKey | null, string, number][] = [
-  ['pmin', 'pmax', 'Цена за ночь, ₽', 100], ['mmin', 'mmax', 'Моя оценка', 0.1], ['tmin', 'tmax', 'Оценка trip.com', 0.1],
-  ['kmax', null, 'До «нашего» отеля, км', 0.1], ['rmin', null, 'Отзывов не меньше', 10],
+  ['pmin', 'pmax', 'Цена за ночь, ₽', 100], ['mmin', 'mmax', 'Моя оценка', 0.1], ['tmin', 'tmax', 'Оценка Островка', 0.1],
+  ['kmax', null, 'До Красной площади, км', 0.1], ['rmin', null, 'Отзывов не меньше', 10],
 ]
 function setRange(k: RangeKey, v: string) {
   const n = v.trim().replace(',', '.')
@@ -80,8 +80,8 @@ const typeTitle = (t: string) => (TYPES.find((x) => x[0] === t)?.[1] ?? ['без
           <button class="link" type="button" @click="f.types.splice(0)">Все типы</button>
         </div>
       </div>
-      <div class="group">
-        <span class="glabel">Отметки trip.com (есть хотя бы одна из выбранных)</span>
+      <div v-if="Object.values(tcCounts).some((n) => n)" class="group">
+        <span class="glabel">Отметки площадки (есть хотя бы одна из выбранных)</span>
         <div class="zones">
           <button v-for="[k, label, title] in TC_LABELS.filter(([x]) => tcCounts[x])" :key="k" type="button" class="chip" :title="title" :aria-pressed="f.tcm.includes(k)" @click="toggle(f.tcm, k)">
             <span class="box">✓</span>{{ label }} <span class="sub">{{ tcCounts[k] }}</span>

@@ -7,9 +7,11 @@ import { DOW, plural } from '../lib/format'
 const trip = useTrip()
 const route = useRoute()
 const { store, version } = useMarks()
-const START = new Date('2026-12-06T00:00:00')
-const dayIdx = (d: string) => Math.round((+new Date(d + 'T00:00:00') - +START) / 864e5)
-const days = Array.from({ length: 20 }, (_, i) => { const dt = new Date(+START + i * 864e5); return { d: dt.getDate(), w: dt.getDay(), i } })
+// Лента дней — от первого заезда до последнего выезда
+const START = computed(() => new Date((trip.stops.map((s) => s.ci).sort()[0] ?? '2026-10-14') + 'T00:00:00'))
+const dayIdx = (d: string) => Math.round((+new Date(d + 'T00:00:00') - +START.value) / 864e5)
+const LEN = computed(() => Math.max(1, ...trip.stops.map((s) => dayIdx(s.co))))
+const days = computed(() => Array.from({ length: LEN.value }, (_, i) => { const dt = new Date(+START.value + i * 864e5); return { d: dt.getDate(), w: dt.getDay(), i } }))
 const segs = computed(() => (version.value, trip.stops.map((s) => ({ s, a: dayIdx(s.ci), b: dayIdx(s.co), plus: store.counts(s.id).p }))))
 const hasV = computed(() => trip.stops.some((s) => s.virtual))
 const tab = computed(() => (route.params.tab as string) || 'hotels')
@@ -22,7 +24,7 @@ watch(() => route.params.stop, async () => {
 </script>
 <template>
   <nav ref="nav" class="route" aria-label="Маршрут">
-    <div :class="['ribbon', hasV ? 'has-v' : '']">
+    <div :class="['ribbon', hasV ? 'has-v' : '']" :style="{ gridTemplateColumns: `repeat(${days.length},minmax(36px,1fr))`, minWidth: days.length * 38 + 'px' }">
       <div v-for="d in days" :key="d.i" :class="['day', d.w === 0 || d.w === 6 ? 'we' : '']" :style="{ gridColumn: d.i + 1, gridRow: 1 }"><b>{{ d.d }}</b>{{ DOW[d.w] }}</div>
       <template v-for="{ s, a, b, plus } in segs" :key="s.id">
       <!-- Объединённая остановка — тонкая плашка над отрезками, которые она собирает. -->
@@ -39,6 +41,6 @@ watch(() => route.params.stop, async () => {
       </RouterLink>
       </template>
     </div>
-    <div class="legend-route"><span><i class="c-bkk"></i>Бангкок</span><span><i class="c-cm"></i>Чиангмай</span><span><i class="c-cr"></i>Чианграй</span><span><i class="c-pt"></i>Ко Лан и Паттайя</span><span>Розовые числа — выходные</span></div>
+    <div class="legend-route"><span>Розовые числа — выходные</span></div>
   </nav>
 </template>

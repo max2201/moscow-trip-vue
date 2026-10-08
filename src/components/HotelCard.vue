@@ -20,7 +20,7 @@ const mark = computed(() => (version.value, store.mine(props.stop.id, props.r.id
     <div class="hcard-top">
       <MarkButton :stop="stop.id" :id="r.id" />
       <div>
-        <h3><a :href="tripLink(r.id, stop)" target="_blank" rel="noopener">{{ r.nm }}</a></h3>
+        <h3><a :href="tripLink(r.id, stop, r.o)" target="_blank" rel="noopener">{{ r.nm }}</a></h3>
         <div class="meta">#{{ r.rank }}, {{ r.z }}<template v-if="r.yr">, открыт в {{ r.yr }}</template><template v-if="r.ry">, ремонт {{ r.ry }}</template></div>
         <Badges :row="r" :stop="stop" />
         <TcMarksBlock :tc="r.tc" quiet />
@@ -30,8 +30,8 @@ const mark = computed(() => (version.value, store.mine(props.stop.id, props.r.id
     <div class="facts">
       <span><b>{{ r.night ? fmt(r.night) + ' ₽' : 'нет цены' }}</b> за ночь</span>
       <span :class="r.free ? 'free' : ''">{{ r.free ? 'бесплатная отмена' : 'отмена платная' }}</span>
-      <span v-if="!r.anchor && r.km != null"><b>{{ dec(r.km.toFixed(2)) }} км</b> до «нашего»</span>
-      <span>trip.com <b>{{ dec1(r.sc) }}</b> ({{ fmt(r.rv) }})</span>
+      <span v-if="!r.anchor && r.km != null"><b>{{ dec(r.km.toFixed(2)) }} км</b> до Красной площади</span>
+      <span>Островок <b>{{ dec1(r.sc) }}</b> ({{ fmt(r.rv) }})</span>
     </div>
     <BriefBlock :row="r" :stop="stop" />
     <details>
