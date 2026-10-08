@@ -3,7 +3,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "43 2 * * *"   # каждый день в 02:43 UTC, после обновления данных в thailand-trip-pipeline (не ровно в :00 — такие запуски GitHub часто пропускает)
+    - cron: "43 2 * * *"   # каждый день в 02:43 UTC, после обновления данных в moscow-trip-pipeline (не ровно в :00 — такие запуски GitHub часто пропускает)
   workflow_dispatch:
 permissions:
   contents: read
@@ -21,10 +21,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Свежие данные из thailand-trip-pipeline
+      - name: Свежие данные из moscow-trip-pipeline
         run: |
           set -e
-          if curl -fsSL https://codeload.github.com/max2201/thailand-trip-pipeline/tar.gz/refs/heads/main -o /tmp/data.tgz; then
+          if curl -fsSL https://codeload.github.com/max2201/moscow-trip-pipeline/tar.gz/refs/heads/main -o /tmp/data.tgz; then
             mkdir -p /tmp/pipeline && tar -xzf /tmp/data.tgz -C /tmp/pipeline
             SRC=$(find /tmp/pipeline -maxdepth 2 -type d -name site-data | head -1)
             if [ -n "$SRC" ] && [ -f "$SRC/index.json" ]; then rm -rf public/data && cp -r "$SRC" public/data && echo "данные обновлены"; fi
