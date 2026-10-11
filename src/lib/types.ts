@@ -39,6 +39,7 @@ export interface Hotel {
   scoreMax?: number
   sourceKm?: number | null
   url?: string | null
+  ad?: string
   fx?: string[]         // чем известен
   rf?: string[]         // осторожно
   lc?: string           // где
