@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import type { Row, Stop, Guide } from '../lib/types'
 import type { Filters, FlagKey, RangeKey } from '../lib/filters'
 import { FLAG_LABELS, defaultFilters } from '../lib/filters'
+import { sourceLabel } from '../lib/booking'
 import { TYPES, TYPE_ORDER } from '../lib/rows'
 import { TC_LABELS, tcHas } from '../lib/tcmarks'
 import { useMarks } from '../composables/useMarks'
@@ -20,6 +21,7 @@ const zones = computed(() => {
   const order = props.guide.districts.map((d) => d.t)
   return Object.keys(zoneCounts.value).sort((a, b) => +props.stop.prio.includes(b) - +props.stop.prio.includes(a) || order.indexOf(a) - order.indexOf(b))
 })
+const sourceCounts = computed(() => { const c: Record<string, number> = {}; props.rows.forEach(r => { const s = r.source || 'ostrovok'; c[s] = (c[s] || 0) + 1 }); return c })
 const typeCounts = computed(() => { const c: Record<string, number> = {}; props.rows.forEach((r) => (c[r.tg] = (c[r.tg] || 0) + 1)); return c })
 const tcCounts = computed(() => Object.fromEntries(TC_LABELS.map(([k]) => [k, props.rows.filter((r) => tcHas(r.tc, k)).length])))
 const savedCount = computed(() => props.rows.filter((r) => r.sv).length)
@@ -31,7 +33,7 @@ const flagCount = (k: FlagKey) => (k === 'inradius' ? radiusText(legend.value.r)
 
 const toggle = (arr: string[], v: string) => { const i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); else arr.push(v) }
 const RANGES: [RangeKey, RangeKey | null, string, number][] = [
-  ['pmin', 'pmax', 'Цена за ночь, ₽', 100], ['mmin', 'mmax', 'Моя оценка', 0.1], ['tmin', 'tmax', 'Оценка Островка', 0.1],
+  ['pmin', 'pmax', 'Цена за ночь, ₽', 100], ['mmin', 'mmax', 'Моя оценка', 0.1], ['tmin', 'tmax', 'Оценка гостей, из 10', 0.1],
   ['kmax', null, 'До Красной площади, км', 0.1], ['rmin', null, 'Отзывов не меньше', 10],
 ]
 function setRange(k: RangeKey, v: string) {
@@ -58,6 +60,15 @@ const typeTitle = (t: string) => (TYPES.find((x) => x[0] === t)?.[1] ?? ['без
 
 <template>
   <div class="panel">
+    <div class="prow">
+      <div class="group">
+        <span class="glabel">Площадки бронирования</span>
+        <div class="zones">
+          <button v-for="(n, source) in sourceCounts" :key="source" type="button" class="chip" :aria-pressed="f.sources.includes(source)" @click="toggle(f.sources, source)"><span class="box">✓</span>{{ sourceLabel(source) }} <span class="sub">{{ n }}</span></button>
+          <button class="link" type="button" @click="f.sources.splice(0)">Все площадки с данными</button>
+        </div>
+      </div>
+    </div>
     <div class="prow">
       <label class="search"><span class="glabel">Поиск</span><input v-model.trim="f.q" type="search" placeholder="Название отеля"></label>
       <div class="group">

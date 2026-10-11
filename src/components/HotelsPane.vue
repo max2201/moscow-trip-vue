@@ -9,6 +9,7 @@ import { useLegend } from '../composables/useLegend'
 import { useReports } from '../composables/useReports'
 import { isOpen, statusText } from '../lib/reports'
 import FiltersPanel from './FiltersPanel.vue'
+import BookingSources from './BookingSources.vue'
 import HotelsTable from './HotelsTable.vue'
 import HotelCard from './HotelCard.vue'
 import HotelMap from './HotelMap.vue'
@@ -71,6 +72,7 @@ watch(() => props.filters, () => {
 </script>
 
 <template>
+  <BookingSources :stop="stop" />
   <FiltersPanel :filters="filters" :rows="data.rows" :stop="stop" :guide="guide" :shown="list.length" :total="data.rows.length" />
   <div class="viewbar">
     <div class="seg-toggle" role="group" aria-label="Вид">
