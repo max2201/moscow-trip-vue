@@ -4,6 +4,7 @@ import L from 'leaflet'
 import { hoverHotel, setPointHover } from '../lib/hover'
 import type { Row, Stop } from '../lib/types'
 import { scoreColor } from '../lib/format'
+import { ratingBasis } from '../lib/rating'
 import { boxStyle, canvasStyle, defaultMapSize, keyResize, loadMapSize, saveMapSize, startResize, type MapSize } from '../lib/mapsize'
 import {
   LEGEND_MARK, LEGEND_SCORE, R_MAX, R_MIN, R_STEP, legendCounts, parseRadius, pinHtml, radiusText,
@@ -61,7 +62,7 @@ const markOf = (id: number) => shownMark(mineOf(id), legend.value.all ? othersOf
 const counts = computed(() => (version.value, legendCounts(props.rows, props.visible, markOf)))
 
 const cssVar = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim() || '#888'
-const colorOf = (r: Row) => (r.anchor ? cssVar('--ink') : cssVar(scoreColor(r.my).slice(4, -1)))
+const colorOf = (r: Row) => (r.anchor ? cssVar('--ink') : ratingBasis(r) === 'none' ? cssVar('--uncertain') : cssVar(scoreColor(r.my).slice(4, -1)))
 
 // ---- точки: обычные рисуем на canvas, отмеченные — значками с «+»/«−» поверх
 interface Entry { layer: L.CircleMarker | L.Marker; kind: string; on: boolean }
@@ -70,7 +71,7 @@ const entries = new Map<number, Entry>()
 function makeLayer(r: Row, ll: L.LatLngTuple, mark: number, sel: boolean, foreign: boolean): L.CircleMarker | L.Marker {
   const layer = mark
     ? L.marker(ll, { icon: L.divIcon({ className: 'mpin-wrap', html: pinHtml(mark, colorOf(r), sel, foreign), iconSize: [22, 22], iconAnchor: [11, 11] }), keyboard: false, riseOnHover: true, zIndexOffset: mark === 1 ? 500 : 0 })
-    : L.circleMarker(ll, { radius: r.anchor ? 9 : 6, weight: 1.5, color: '#fff', fillColor: colorOf(r), fillOpacity: 0.95 })
+    : L.circleMarker(ll, { radius: r.anchor ? 9 : 6, weight: 1.5, color: '#fff', fillColor: colorOf(r), fillOpacity: 0.95, dashArray: ratingBasis(r) === 'none' ? '2 2' : undefined })
   layer.bindTooltip('')
   layer.on('click', () => onPointClick(r.id))
   return layer

@@ -5,6 +5,7 @@
  */
 import type { Row } from './types'
 import { dec, dec1, fmt } from './format'
+import { ratingBasis, ratingEvidence, ratingLabel } from './rating'
 
 export type LegendKey = 'g9' | 'g8' | 'glow' | 'gnone' | 'plus' | 'minus' | 'nomark' | 'anchor' | 'ring'
 /** off — выключенные группы, r — радиус круга (м), all — показывать отметки всех участников, а не только мои. */
@@ -12,7 +13,7 @@ export interface LegendState { off: LegendKey[]; r: number; all: boolean }
 
 /** Группы по оценке: ключ, подпись, CSS-переменная цвета. */
 export const LEGEND_SCORE: [LegendKey, string, string][] = [
-  ['g9', '9+', '--good'], ['g8', '8–8,9', '--warn'], ['glow', 'ниже 8', '--bad'], ['gnone', 'нет оценки', '--muted'],
+  ['g9', '9+', '--good'], ['g8', '8–8,9', '--warn'], ['glow', 'ниже 8', '--bad'], ['gnone', 'условная, мало данных', '--uncertain'],
 ]
 /** Группы по моим отметкам: ключ, подпись, отметка. */
 export const LEGEND_MARK: [LegendKey, string, 0 | 1 | -1][] = [['plus', 'плюсы', 1], ['minus', 'минусы', -1], ['nomark', 'без отметки', 0]]
@@ -42,6 +43,7 @@ export function toggleKey(s: LegendState, k: LegendKey): LegendState {
 }
 
 export const scoreKey = (my: number | null): LegendKey => (my == null ? 'gnone' : my >= 9 ? 'g9' : my >= 8 ? 'g8' : 'glow')
+export const rowScoreKey = (r: Row): LegendKey => ratingBasis(r) === 'none' ? 'gnone' : scoreKey(r.my)
 export const markKey = (m: number): LegendKey => (m === 1 ? 'plus' : m === -1 ? 'minus' : 'nomark')
 
 /**
@@ -61,7 +63,7 @@ export function shownOnMap(r: Row, mark: number, visible: Set<number>, off: Lege
   if (r.id === selected) return true
   if (r.anchor) return !off.includes('anchor')
   if (!visible.has(r.id)) return false
-  return !off.includes(scoreKey(r.my)) && !off.includes(markKey(mark))
+  return !off.includes(rowScoreKey(r)) && !off.includes(markKey(mark))
 }
 
 /** Сколько отелей из выборки таблицы попадает в каждую группу (без «нашего»). */
@@ -69,7 +71,7 @@ export function legendCounts(rows: Row[], visible: Set<number>, mark: (id: numbe
   const c: Partial<Record<LegendKey, number>> = {}
   for (const r of rows) {
     if (r.anchor || !visible.has(r.id)) continue
-    const a = scoreKey(r.my), b = markKey(mark(r.id))
+    const a = rowScoreKey(r), b = markKey(mark(r.id))
     c[a] = (c[a] ?? 0) + 1
     c[b] = (c[b] ?? 0) + 1
   }
@@ -120,6 +122,7 @@ export function tooltipHtml(r: Row, mark: number, others: [string, number][], se
   let s = `<b>${esc(r.nm)}</b>: ${r.my == null ? 'нет оценки' : dec1(r.my)}`
   if (r.km != null && !r.anchor) s += `, ${dec(r.km.toFixed(1))} км`
   if (r.night) s += `, ${fmt(r.night)} ₽`
+  s += `<br><small>${esc(ratingLabel(r))}: ${esc(ratingEvidence(r))}</small>`
   const marks = [...(mark ? [['ваш', mark] as [string, number]] : []), ...others]
   if (marks.length) s += '<br>' + marks.map(([n, v]) => `${esc(n)} ${v === 1 ? '+' : '−'}`).join(', ')
   if (selected) s += `<br><small style="color:#5D6977">ещё клик по точке — ${NEXT[mark] ?? NEXT[0]}</small>`

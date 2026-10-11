@@ -1,6 +1,7 @@
 import type { Hotel, Level, Prices, Row, Stop, StopRows } from './types'
 import { clamp, hav, kmText, plural, dec } from './format'
 import { reviewFit } from './review-fit'
+import { fallbackComponents, ratingBasis, ratingEvidence, ratingLabel } from './rating'
 
 export const TYPES: [string, string[]][] = [
   ['Отели', ['Отель', 'Мотель', 'Парк-отель', 'Отель для свиданий']],
@@ -57,15 +58,13 @@ export function buildRows(stop: Stop, hotels: Hotel[], prices: Prices): StopRows
     r.balRoom = BAL.test(room) && !NO_BAL.test(room)
     r.balRev = (h.bal || 0) >= 2 || ((h.bal || 0) >= 1 && h.an < 20)
     r.balcony = r.balRoom || r.balRev
-    if (h.cp) {
-      const [base, fl, neg, tr, sm] = h.cp
+    {
+      const [base, fl, neg, tr, sm] = h.cp || fallbackComponents(h)
       const prox = km == null ? 0 : clamp(0.5 - 0.25 * km, -0.5, 0.4)
       const value = r.night && !r.dorm ? clamp((medp - r.night) / (medp * 0.8), -0.4, 0.4) : 0
-      r.my = Math.round(clamp(base + fl + neg + tr + sm + prox + value, 0, 10) * 10) / 10
+      const cap = ratingBasis(h) === 'none' ? 7 : ratingBasis(h) === 'platform' ? 9.5 : 10
+      r.my = Math.round(clamp(base + fl + neg + tr + sm + prox + value, 0, cap) * 10) / 10
       r.parts = { base, fl, neg, tr, sm, prox: Math.round(prox * 100) / 100, value: Math.round(value * 100) / 100 }
-    } else {
-      r.my = null
-      r.parts = null
     }
     r.gem = !!(r.my && r.my >= 9.2 && h.an >= 30 && !r.dorm && !r.shared && r.night && r.night <= p35)
     r.flagRate = h.an ? ((h.ro * 3 + h.at + h.sm + h.dm) / h.an) * 100 : null
@@ -94,7 +93,7 @@ export interface Brief { known: string[]; warn: string[]; reputation: 'ok' | 'fe
 
 /** «Коротко об отеле»: чем известен, осторожно, где. */
 export function brief(r: Row, stop: Stop): Brief {
-  const warn = [...(r.rf || [])]
+  const warn = [...new Set([...(r.reviewFit.state === 'concerns' ? r.reviewFit.reasons : []), ...(r.rf || [])])]
   const n = (c: number) => `${c} ${plural(c, 'отзыв', 'отзыва', 'отзывов')}`
   if (r.insLvl === 'fb') warn.unshift(`часто пишут о насекомых — ${n(r.ins)}`)
   if (r.smLvl === 'fb') warn.unshift(`часто пишут о запахе — ${n(r.sm)}`)
@@ -113,7 +112,7 @@ export function partsTitle(r: Row) {
   const p = r.parts
   if (!p) return r.an === 0 ? 'Тексты отзывов ещё не разобраны' : 'Слишком мало отзывов для оценки'
   const sg = (x: number) => (x >= 0 ? '+' : '') + dec(x)
-  return `Основа ${dec(p.base.toFixed(1))}; флаги ${dec(p.fl)}; близость ${sg(p.prox)}; цена ${sg(p.value)}; негатив ${sg(p.neg)}; динамика ${sg(p.tr)}${p.sm ? '; мало отзывов ' + dec(p.sm) : ''}`
+  return `${ratingLabel(r)}. ${ratingEvidence(r)} Основа ${dec(p.base.toFixed(1))}; флаги ${dec(p.fl)}; близость ${sg(p.prox)}; цена ${sg(p.value)}; негатив ${sg(p.neg)}; динамика ${sg(p.tr)}${p.sm ? '; неопределённость ' + dec(p.sm) : ''}`
 }
 
 export function zoneStats(rows: Row[], zones: string[]) {

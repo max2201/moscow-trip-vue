@@ -8,6 +8,7 @@ import { useMarks } from '../composables/useMarks'
 import { useLegend } from '../composables/useLegend'
 import { useReports } from '../composables/useReports'
 import { isOpen, statusText } from '../lib/reports'
+import { ratingBasis } from '../lib/rating'
 import FiltersPanel from './FiltersPanel.vue'
 import BookingSources from './BookingSources.vue'
 import HotelsTable from './HotelsTable.vue'
@@ -27,6 +28,11 @@ const marksView = computed(() => {
 })
 const list = computed(() => applyFilters(props.data.rows, props.filters, marksView.value, legend.value.r))
 const visible = computed(() => new Set(list.value.map((r) => r.id)))
+const ratingCounts = computed(() => {
+  const counts = { texts: 0, platform: 0, none: 0 }
+  for (const row of list.value) counts[ratingBasis(row)]++
+  return counts
+})
 
 // Таблица на широком экране, карточки — на телефоне. Выбор запоминается.
 const VKEY = 'thai-trip-view'
@@ -74,6 +80,7 @@ watch(() => props.filters, () => {
 <template>
   <BookingSources :stop="stop" />
   <FiltersPanel :filters="filters" :rows="data.rows" :stop="stop" :guide="guide" :shown="list.length" :total="data.rows.length" />
+  <p class="rating-summary">Оценены все {{ list.length }} предложений в выборке: {{ ratingCounts.texts }} — по разобранным текстам, {{ ratingCounts.platform }} — предварительно по рейтингу площадки, {{ ratingCounts.none }} — условно, данных для оценки пока нет. Цвет карты показывает балл; основу оценки смотрите в подсказке.</p>
   <div class="viewbar">
     <div class="seg-toggle" role="group" aria-label="Вид">
       <button type="button" :aria-pressed="view === 'table'" @click="view = 'table'">Таблица</button>

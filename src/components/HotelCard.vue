@@ -34,7 +34,7 @@ const mark = computed(() => (version.value, store.mine(props.stop.id, props.r.id
       <span v-if="r.night">{{ fmt(r.night) }} ₽ / ночь</span>
       <span :class="r.free ? 'free' : ''">{{ r.free === null ? 'условия отмены уточнить' : r.free ? 'бесплатная отмена' : 'отмена платная' }}</span>
       <span v-if="!r.anchor && r.km != null"><b>{{ dec(r.km.toFixed(2)) }} км</b> {{ r.distanceBasis === 'source' ? 'до центра по площадке' : 'до Красной площади' }}</span>
-      <span>{{ sourceLabel(r.reviewSource || r.source) }} <b>{{ dec1(r.sc) }}/10</b> ({{ fmt(r.rv) }})</span>
+      <span>{{ sourceLabel(r.reviewSource || r.source) }} <b>{{ dec1(r.sc) }}/10</b><template v-if="r.rating?.scoreBasis === 'sample'"> · средняя прочитанных</template> ({{ r.rv ? fmt(r.rv) : 'число отзывов неизвестно' }})</span>
     </div>
     <div class="meta">{{ sourceLabel(r.source) }}<template v-if="r.collectedAt"> · {{ collectedText(r.collectedAt) }}</template></div>
     <HousingFacts :row="r" />

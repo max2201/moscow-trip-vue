@@ -15,7 +15,7 @@ export interface Filters {
   zones: string[]
   types: string[]
   sources: string[]
-  reviews: '' | 'ok' | 'concerns' | 'unknown'
+  reviews: '' | 'consider' | 'ok' | 'preliminary' | 'concerns' | 'unknown'
   bathtub: '' | 'yes' | 'no' | 'unknown'
   duplex: '' | 'yes' | 'no' | 'unknown'
   rooms: string[]
@@ -49,7 +49,7 @@ const inRange = (v: number | null, lo?: number, hi?: number) =>
 
 /** radiusM — радиус круга на карте (в метрах): его использует флажок «Только в радиусе». */
 export function passes(r: Row, f: Filters, marks: MarkView, radiusM?: number) {
-  if (f.reviews && r.reviewFit.state !== f.reviews) return false
+  if (f.reviews === 'consider' ? !['ok', 'preliminary'].includes(r.reviewFit.state) : f.reviews && r.reviewFit.state !== f.reviews) return false
   const matchesFact = (value: boolean | null, wanted: Filters['bathtub']) => !wanted || (wanted === 'unknown' ? value == null : value === (wanted === 'yes'))
   if (!matchesFact(r.housing.bathtub, f.bathtub) || !matchesFact(r.housing.duplex, f.duplex)) return false
   const roomKey = r.housing.rooms == null ? 'unknown' : r.housing.rooms >= 4 ? '4+' : String(r.housing.rooms)
@@ -65,7 +65,7 @@ export function passes(r: Row, f: Filters, marks: MarkView, radiusM?: number) {
   if (!inRange(r.night, R.pmin, R.pmax) || !inRange(r.my, R.mmin, R.mmax) || !inRange(r.sc, R.tmin, R.tmax)) return false
   if (R.kmax != null && (r.km == null || r.km > R.kmax)) return false
   if (radiusM != null && f.flags.includes('inradius') && (r.km == null || r.km * 1000 > radiusM)) return false
-  if (R.rmin != null && r.an < R.rmin) return false
+  if (R.rmin != null && r.rv < R.rmin) return false
   const has = (k: FlagKey) => f.flags.includes(k)
   if (has('noinsect') && (r.ins > 0 || !r.an)) return false
   if (has('nosmell') && (!r.an || ((r.sm + r.dm) / r.an) * 100 >= 1.5)) return false
@@ -143,7 +143,7 @@ export function decodeFilters(raw: string | null | undefined, stop: Stop): Filte
     if (Array.isArray(o.z)) f.zones = o.z
     if (Array.isArray(o.t)) f.types = o.t
     if (Array.isArray(o.src)) f.sources = o.src.filter((s: unknown): s is string => typeof s === 'string')
-    if (['ok', 'concerns', 'unknown'].includes(o.rev)) f.reviews = o.rev
+    if (['consider', 'ok', 'preliminary', 'concerns', 'unknown'].includes(o.rev)) f.reviews = o.rev
     if (['yes', 'no', 'unknown'].includes(o.bath)) f.bathtub = o.bath
     if (['yes', 'no', 'unknown'].includes(o.duplex)) f.duplex = o.duplex
     if (Array.isArray(o.rooms)) f.rooms = o.rooms.filter((v: unknown) => ['0', '1', '2', '3', '4+', 'unknown'].includes(String(v))).map(String)

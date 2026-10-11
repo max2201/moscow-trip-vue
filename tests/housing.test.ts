@@ -11,10 +11,10 @@ assert.equal(reviewFit(hotel).state, 'ok')
 for (const change of [{ sc: 7.9 }, { ng: 15.1 }, { ro: 1 }, { sm: 5, dm: 0 }, { reviewRisks: { booking: 2 } }, { reviewRisks: { linen: 5 } }]) {
   assert.equal(reviewFit({ ...hotel, ...change }).state, 'concerns')
 }
-for (const change of [{ an: 19 }, { an: 0, rv: 7709, sc: 9.8 }, { reviewRisks: undefined }, { ng: null }]) {
-  assert.equal(reviewFit({ ...hotel, ...change }).state, 'unknown')
+for (const change of [{ an: 19, sm: 0, dm: 0 }, { an: 0, rv: 7709, sc: 9.8 }, { reviewRisks: undefined }, { ng: null }]) {
+  assert.equal(reviewFit({ ...hotel, ...change }).state, 'preliminary')
 }
-assert.equal(reviewFit({ ...hotel, reviewRisks: { booking: 1, linen: 4 } }).state, 'ok')
+assert.equal(reviewFit({ ...hotel, reviewRisks: { booking: 1, linen: 4 } }).state, 'concerns')
 const facts: HousingFacts = { bathtub: true, rooms: 2, duplex: true, evidence: { rooms: 'Название номера: 2-комнатные апартаменты' } }
 const prices: Prices = { 1: [4000, 32000, null, '2-комнатные апартаменты', 0, 0, 0, 0, { housing: facts }] }
 const row = buildRows(stop, [hotel], prices).rows[0]!

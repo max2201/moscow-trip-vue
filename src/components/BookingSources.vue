@@ -14,8 +14,8 @@ const eligibleCounts = computed(() => {
   }
   return counts
 })
-const coverageText = (reason?: string) => reason === 'limit' ? 'Достигнут защитный предел страниц' : reason === 'stalled' ? 'Следующие карточки перестали загружаться' : reason === 'end_scroll' ? 'Достигнут конец загружаемого списка; общий размер выдачи не указан' : reason === 'end' ? 'Достигнут конец доступной выдачи' : reason === 'in_progress' ? 'Сбор продолжается' : ''
-const stateText = (state: string, count: number) => state === 'error' ? count ? 'сохранён прошлый снимок' : 'обновление не удалось' : state === 'manual' ? 'нужен импорт' : count ? 'есть предложения' : 'сбор не подключён'
+const coverageText = (reason?: string) => reason === 'limit' ? 'Достигнут защитный предел страниц' : reason === 'stalled' ? 'Следующие карточки перестали загружаться' : reason === 'end_scroll' ? 'Достигнут конец загружаемого списка; общий размер выдачи не указан' : reason === 'end' ? 'Достигнут конец доступной выдачи' : reason === 'in_progress' ? 'Промежуточная выборка; конец выдачи не достигнут' : reason === 'time_limit' ? 'Достигнут предел времени; частичная выборка сохранена' : ''
+const stateText = (state: string, count: number) => state === 'error' ? count ? 'сохранены доступные предложения' : 'обновление не удалось' : state === 'manual' ? 'нужен импорт' : count ? 'есть предложения' : 'сбор не подключён'
 </script>
 
 <template>

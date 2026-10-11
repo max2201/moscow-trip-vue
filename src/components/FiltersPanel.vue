@@ -38,7 +38,7 @@ const flagCount = (k: FlagKey) => (k === 'inradius' ? radiusText(legend.value.r)
 const toggle = (arr: string[], v: string) => { const i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); else arr.push(v) }
 const RANGES: [RangeKey, RangeKey | null, string, number][] = [
   ['pmin', 'pmax', 'Цена за ночь, ₽', 100], ['mmin', 'mmax', 'Моя оценка', 0.1], ['tmin', 'tmax', 'Оценка гостей, из 10', 0.1],
-  ['kmax', null, 'До Красной площади, км', 0.1], ['rmin', null, 'Отзывов не меньше', 10],
+  ['kmax', null, 'До Красной площади, км', 0.1], ['rmin', null, 'Отзывов на площадке не меньше', 10],
 ]
 function setRange(k: RangeKey, v: string) {
   const n = v.trim().replace(',', '.')
@@ -109,7 +109,9 @@ const typeTitle = (t: string) => (TYPES.find((x) => x[0] === t)?.[1] ?? ['без
       <label class="group housing-select"><span class="glabel">По отзывам</span>
         <select v-model="f.reviews" aria-label="По отзывам">
           <option value="">Любые</option>
-          <option value="ok">Можно рассматривать · {{ reviewCount('ok') }}</option>
+          <option value="consider">Можно рассматривать, включая предварительные · {{ reviewCount('ok') + reviewCount('preliminary') }}</option>
+          <option value="ok">Тексты проверены · {{ reviewCount('ok') }}</option>
+          <option value="preliminary">Предварительно по оценкам · {{ reviewCount('preliminary') }}</option>
           <option value="concerns">Есть сомнения · {{ reviewCount('concerns') }}</option>
           <option value="unknown">Недостаточно данных · {{ reviewCount('unknown') }}</option>
         </select>
