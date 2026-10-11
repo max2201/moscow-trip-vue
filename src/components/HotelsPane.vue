@@ -80,7 +80,7 @@ watch(() => props.filters, () => {
 <template>
   <BookingSources :stop="stop" />
   <FiltersPanel :filters="filters" :rows="data.rows" :stop="stop" :guide="guide" :shown="list.length" :total="data.rows.length" />
-  <p class="rating-summary">Оценены все {{ list.length }} предложений в выборке: {{ ratingCounts.texts }} — по разобранным текстам, {{ ratingCounts.platform }} — предварительно по рейтингу площадки, {{ ratingCounts.none }} — условно, без отзывов. Цвет карты показывает балл; основу оценки смотрите в подсказке.</p>
+  <p class="rating-summary">Оценены все {{ list.length }} предложений в выборке: {{ ratingCounts.texts }} — по разобранным текстам, {{ ratingCounts.platform }} — предварительно по рейтингу площадки, {{ ratingCounts.none }} — условно, данных для оценки пока нет. Цвет карты показывает балл; основу оценки смотрите в подсказке.</p>
   <div class="viewbar">
     <div class="seg-toggle" role="group" aria-label="Вид">
       <button type="button" :aria-pressed="view === 'table'" @click="view = 'table'">Таблица</button>

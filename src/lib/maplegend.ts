@@ -13,7 +13,7 @@ export interface LegendState { off: LegendKey[]; r: number; all: boolean }
 
 /** Группы по оценке: ключ, подпись, CSS-переменная цвета. */
 export const LEGEND_SCORE: [LegendKey, string, string][] = [
-  ['g9', '9+', '--good'], ['g8', '8–8,9', '--warn'], ['glow', 'ниже 8', '--bad'], ['gnone', 'условная, нет отзывов', '--uncertain'],
+  ['g9', '9+', '--good'], ['g8', '8–8,9', '--warn'], ['glow', 'ниже 8', '--bad'], ['gnone', 'условная, мало данных', '--uncertain'],
 ]
 /** Группы по моим отметкам: ключ, подпись, отметка. */
 export const LEGEND_MARK: [LegendKey, string, 0 | 1 | -1][] = [['plus', 'плюсы', 1], ['minus', 'минусы', -1], ['nomark', 'без отметки', 0]]
