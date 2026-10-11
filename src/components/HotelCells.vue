@@ -36,7 +36,7 @@ const emit = defineEmits<{ pin: [] }>()
   <td><ul class="pc pros"><li v-for="x in r.pr" :key="x">{{ x }}</li><li v-if="!r.pr.length" class="sub2">мало данных</li></ul></td>
   <td><ul class="pc cons"><li v-for="x in consList(r)" :key="x">{{ x }}</li></ul></td>
   <td><FlagsBlock :row="r" /></td>
-  <td class="num"><b>{{ dec1(r.sc) }}</b><div class="meta">{{ sourceLabel(r.reviewSource || r.source) }} · 10-балльная шкала</div><div class="sub2">{{ fmt(r.rv) }} отзывов</div></td>
+  <td class="num"><b>{{ dec1(r.sc) }}</b><div class="meta">{{ sourceLabel(r.reviewSource || r.source) }} · {{ r.rating?.scoreBasis === 'sample' ? 'средняя прочитанных текстов' : '10-балльная шкала' }}</div><div class="sub2">{{ r.rv ? fmt(r.rv) + ' отзывов' : 'число отзывов неизвестно' }}</div></td>
   <td><SubBar :v="r.cl" /></td>
   <td><SubBar :v="r.fa" /></td>
   <td><SubBar :v="r.lo" /></td>

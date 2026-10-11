@@ -11,7 +11,7 @@ export function ratingLabel(h: Hotel) {
 export function ratingEvidence(h: Hotel) {
   const source = sourceLabel(h.reviewSource || h.source)
   switch (ratingBasis(h)) {
-    case 'texts': return `${source}: разобрано ${h.an} текстов из ${h.rv} опубликованных.${h.reviewCoverage && !h.reviewCoverage.complete ? ' Доступна выборка, весь архив не прочитан.' : ''}${h.an < 20 ? ' Мало текстов, вывод предварительный.' : ''}`
+    case 'texts': return `${source}: разобрано ${h.an} текстов${h.rv ? ' из ' + h.rv + ' опубликованных' : '; общее число отзывов неизвестно'}.${h.rating?.scoreBasis === 'sample' ? ' Оценка гостей — средняя прочитанной выборки, рейтинг всего объекта не опубликован в снимке.' : ''}${h.reviewCoverage && !h.reviewCoverage.complete ? ' Доступна выборка, весь архив не прочитан.' : ''}${h.an < 20 ? ' Мало текстов, вывод предварительный.' : ''}`
     case 'platform': return `${source}: оценка гостей ${h.sc}/10; ${h.rv ? h.rv + ' опубликованных отзывов' : 'число отзывов неизвестно'}. Тексты не разобраны: скрытые жалобы не проверены. Предварительный балл ограничен 9,5.`
     case 'none': return 'Нет оценки гостей и текстов. Условная основа 6/10 нужна для сортировки; она не подтверждает качество жилья.'
   }

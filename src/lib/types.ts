@@ -45,7 +45,7 @@ export interface Hotel {
   lc?: string           // где
   bal?: number          // упоминаний балкона
   reviewRisks?: Partial<Record<'theft' | 'scam' | 'deposit' | 'booking' | 'rodents' | 'linen' | 'hotwater' | 'notrec', number>>
-  rating?: { basis: 'texts' | 'platform' | 'none'; confidence: 'high' | 'medium' | 'low' | 'none'; textCount: number; reviewCount: number; prior: number }
+  rating?: { basis: 'texts' | 'platform' | 'none'; confidence: 'high' | 'medium' | 'low' | 'none'; textCount: number; reviewCount: number; prior: number; scoreBasis?: 'published' | 'sample' | 'none' }
   reviewCoverage?: { source: string; url: string; collectedAt: string; complete: boolean; reason: string } | null
 }
 

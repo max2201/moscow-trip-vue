@@ -26,6 +26,10 @@ assert.equal(legendCounts([unrated],new Set([unrated.id]),()=>0).gnone,1)
 assert.equal(legendCounts([unrated],new Set([unrated.id]),()=>0).glow,undefined)
 assert.equal(reviewFit(unrated).state,'unknown')
 assert.match(ratingEvidence(unrated), /не подтверждает качество/)
+const sampleOnly = {...hotel,an:2,rv:0,rating:{basis:'texts' as const,confidence:'low' as const,textCount:2,reviewCount:0,prior:8,scoreBasis:'sample' as const}}
+assert.match(ratingEvidence(sampleOnly), /общее число отзывов неизвестно/)
+assert.match(ratingEvidence(sampleOnly), /средняя прочитанной выборки/)
+assert.doesNotMatch(ratingEvidence(sampleOnly), /из 0/)
 assert.equal(reviewFit({...hotel,an:1,reviewRisks:{scam:1}}).state,'concerns')
 const riskRow = buildRows(stop,[{...hotel,an:30,reviewRisks:{scam:1}}],prices).rows[0]!
 assert.match(brief(riskRow,stop).warn.join(' '), /Обман с деньгами/)
