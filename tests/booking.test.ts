@@ -17,10 +17,11 @@ const prices: Prices = {
   '5': [100, 30000, null, '', 0, 0, 0, 0, {source:'yandex'}],
 }
 const {rows} = buildRows(stop,hotels,prices)
-assert.deepEqual(rows.map(r=>r.id),[2,3,5])
-assert.equal(rows[0]!.my,null)
-assert.equal(brief(rows[0]!,stop).reputation,'unread')
-assert.equal(rows[0]!.free,null)
+assert.deepEqual(rows.map(r=>r.id).sort((a,b)=>a-b),[2,3,5])
+const budgetRow = rows.find(r=>r.id===2)!
+assert.ok(Number.isFinite(budgetRow.my))
+assert.equal(brief(budgetRow,stop).reputation,'unread')
+assert.equal(budgetRow.free,null)
 assert.equal(cancellationText(null),'Уточнить условия')
 const filters = defaultFilters(stop)
 const marks = {mine:()=>0 as const,anyPlus:()=>false}
@@ -28,7 +29,7 @@ assert.equal(applyFilters(rows,filters,marks).length,3) // additional sources vi
 filters.sources=['ozon']; filters.sort='night'; filters.dir=1
 assert.deepEqual(applyFilters(rows,filters,marks).map(r=>r.id),[3,2])
 assert.deepEqual(decodeFilters(encodeFilters(filters,stop),stop).sources,['ozon'])
-const r=rows[0]!
+const r=budgetRow
 assert.equal(bookingLink({...r,url:'https://www.ozon.ru/travel/hotels/product/h/?checkIn=2026-10-14'},stop)?.startsWith('https://www.ozon.ru/'),true)
 for(const url of ['javascript:alert(1)','https://ozon.ru.evil.com/','https://user:secret@www.ozon.ru/']) assert.equal(bookingLink({...r,url},stop),undefined)
 console.log('Booking budget, provider links, cancellation, filters and sorting: passed')

@@ -11,12 +11,12 @@ export interface Hotel {
   z: string             // район
   la: number | null
   ln: number | null
-  sc: number | null     // оценка гостей Островка
+  sc: number | null     // оценка гостей площадки, нормализованная из 10
   cl: number | null     // чистота
   fa: number | null     // удобства
   lo: number | null     // расположение
   se: number | null     // сервис
-  rv: number            // отзывов на Островке
+  rv: number            // опубликованных отзывов на площадке
   an: number            // прочитано отзывов
   tot: number
   ng: number | null     // % негатива
@@ -45,6 +45,8 @@ export interface Hotel {
   lc?: string           // где
   bal?: number          // упоминаний балкона
   reviewRisks?: Partial<Record<'theft' | 'scam' | 'deposit' | 'booking' | 'rodents' | 'linen' | 'hotwater' | 'notrec', number>>
+  rating?: { basis: 'texts' | 'platform' | 'none'; confidence: 'high' | 'medium' | 'low' | 'none'; textCount: number; reviewCount: number; prior: number }
+  reviewCoverage?: { source: string; url: string; collectedAt: string; complete: boolean; reason: string } | null
 }
 
 /**
@@ -60,7 +62,7 @@ export interface HousingFacts {
   duplex: boolean | null
   evidence: Partial<Record<'bathtub' | 'rooms' | 'duplex', string>>
 }
-export interface ReviewFit { state: 'ok' | 'concerns' | 'unknown'; reasons: string[] }
+export interface ReviewFit { state: 'ok' | 'preliminary' | 'concerns' | 'unknown'; reasons: string[] }
 export interface OfferMeta { source?: string; url?: string | null; collectedAt?: string | null; distanceBasis?: string; housing?: HousingFacts }
 export type PriceTuple = [number | null, number | null, 0 | 1 | null, string, 0 | 1, 0 | 1, 0 | 1, (TcMarks | 0)?, OfferMeta?]
 export type Prices = Record<string, PriceTuple>

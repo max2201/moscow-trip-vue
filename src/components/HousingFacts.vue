@@ -9,7 +9,7 @@ defineProps<{ row: Row }>()
     <span :title="row.housing.evidence.duplex || 'Количество уровней не указано'"><b>Два уровня:</b> {{ row.housing.duplex == null ? 'неизвестно' : row.housing.duplex ? 'да' : 'нет' }}</span>
   </div>
   <details :class="['review-fit', row.reviewFit.state]">
-    <summary>По отзывам: {{ row.reviewFit.state === 'ok' ? 'можно рассматривать' : row.reviewFit.state === 'concerns' ? 'есть сомнения' : 'недостаточно данных' }}</summary>
+    <summary>По отзывам: {{ row.reviewFit.state === 'ok' ? 'тексты проверены, можно рассматривать' : row.reviewFit.state === 'preliminary' ? 'можно рассматривать предварительно' : row.reviewFit.state === 'concerns' ? 'есть сомнения' : 'недостаточно данных' }}</summary>
     <p v-for="reason in row.reviewFit.reasons" :key="reason">{{ reason }}</p>
   </details>
 </template>

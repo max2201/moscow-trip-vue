@@ -5,6 +5,7 @@
  */
 import type { Row } from './types'
 import { dec, dec1, fmt } from './format'
+import { ratingEvidence, ratingLabel } from './rating'
 
 export type LegendKey = 'g9' | 'g8' | 'glow' | 'gnone' | 'plus' | 'minus' | 'nomark' | 'anchor' | 'ring'
 /** off — выключенные группы, r — радиус круга (м), all — показывать отметки всех участников, а не только мои. */
@@ -120,6 +121,7 @@ export function tooltipHtml(r: Row, mark: number, others: [string, number][], se
   let s = `<b>${esc(r.nm)}</b>: ${r.my == null ? 'нет оценки' : dec1(r.my)}`
   if (r.km != null && !r.anchor) s += `, ${dec(r.km.toFixed(1))} км`
   if (r.night) s += `, ${fmt(r.night)} ₽`
+  s += `<br><small>${esc(ratingLabel(r))}: ${esc(ratingEvidence(r))}</small>`
   const marks = [...(mark ? [['ваш', mark] as [string, number]] : []), ...others]
   if (marks.length) s += '<br>' + marks.map(([n, v]) => `${esc(n)} ${v === 1 ? '+' : '−'}`).join(', ')
   if (selected) s += `<br><small style="color:#5D6977">ещё клик по точке — ${NEXT[mark] ?? NEXT[0]}</small>`
