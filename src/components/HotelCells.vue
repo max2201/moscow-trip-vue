@@ -9,6 +9,7 @@ import SubBar from './SubBar.vue'
 import BriefBlock from './BriefBlock.vue'
 import FlagsBlock from './FlagsBlock.vue'
 import Badges from './Badges.vue'
+import HousingFacts from './HousingFacts.vue'
 import { hoverHotel } from '../lib/hover'
 defineProps<{ r: Row; stop: Stop; rowPinned?: boolean }>()
 const emit = defineEmits<{ pin: [] }>()
@@ -24,6 +25,7 @@ const emit = defineEmits<{ pin: [] }>()
     <div class="meta">{{ r.z }}<template v-if="r.yr">, открыт в {{ r.yr }}</template></div>
     <Badges :row="r" :stop="stop" />
     <div class="meta">{{ r.room }}</div><div class="meta">{{ sourceLabel(r.source) }}<template v-if="r.collectedAt"> · {{ collectedText(r.collectedAt) }}</template></div>
+    <HousingFacts :row="r" />
     <div v-if="r.anchor" class="meta">{{ stop.anchor === stop.proposed ? 'ваш отель по плану' : 'отель ребят по плану' }} на {{ stop.days }} — от него считаются расстояния</div>
   </td>
   <td><ScoreChip :row="r" /></td>

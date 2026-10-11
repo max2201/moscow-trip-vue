@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",
-    "test": "tsx tests/booking.test.ts"
+    "test": "tsx tests/booking.test.ts && tsx tests/housing.test.ts"
   },
   "dependencies": {
     "@tanstack/vue-virtual": "^3.13.0",

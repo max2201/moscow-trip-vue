@@ -44,6 +44,7 @@ export interface Hotel {
   rf?: string[]         // осторожно
   lc?: string           // где
   bal?: number          // упоминаний балкона
+  reviewRisks?: Partial<Record<'theft' | 'scam' | 'deposit' | 'booking' | 'rodents' | 'linen' | 'hotwater' | 'notrec', number>>
 }
 
 /**
@@ -53,7 +54,14 @@ export interface Hotel {
 export interface TcMarks { m?: number; a?: [number, string, string]; n?: string[]; ad?: 1; p?: string[]; d?: number; r?: string[] }
 
 /** [ночь, всего, бесплатная отмена, номер, койка, общий санузел, без окна, отметки trip.com (0 — нет)] */
-export interface OfferMeta { source?: string; url?: string | null; collectedAt?: string | null; distanceBasis?: string }
+export interface HousingFacts {
+  bathtub: boolean | null
+  rooms: number | null // 0 = студия; количество жилых комнат, не мест или спален
+  duplex: boolean | null
+  evidence: Partial<Record<'bathtub' | 'rooms' | 'duplex', string>>
+}
+export interface ReviewFit { state: 'ok' | 'concerns' | 'unknown'; reasons: string[] }
+export interface OfferMeta { source?: string; url?: string | null; collectedAt?: string | null; distanceBasis?: string; housing?: HousingFacts }
 export type PriceTuple = [number | null, number | null, 0 | 1 | null, string, 0 | 1, 0 | 1, 0 | 1, (TcMarks | 0)?, OfferMeta?]
 export type Prices = Record<string, PriceTuple>
 
@@ -111,6 +119,8 @@ export interface Row extends Hotel {
   flagRate: number | null; insLvl: Level; smLvl: Level; dmLvl: Level; clean: boolean
   rank: number
   tc: TcMarks | null
+  housing: HousingFacts
+  reviewFit: ReviewFit
 }
 
 export interface StopRows { rows: Row[]; medp: number; p35: number }
