@@ -28,7 +28,8 @@ export default defineConfig({
       workbox: {
         // Данные всех городов кладём в кеш сразу: в поездке сайт работает без интернета.
         globPatterns: ['**/*.{js,css,html,svg,png,json}'],
-        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        // Full provider inventories exceed the old 4 MiB single-file cap.
+        maximumFileSizeToCacheInBytes: 32 * 1024 * 1024,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/tile\.openstreetmap\.org\//,
