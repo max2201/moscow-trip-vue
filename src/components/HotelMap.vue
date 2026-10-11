@@ -62,7 +62,7 @@ const markOf = (id: number) => shownMark(mineOf(id), legend.value.all ? othersOf
 const counts = computed(() => (version.value, legendCounts(props.rows, props.visible, markOf)))
 
 const cssVar = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim() || '#888'
-const colorOf = (r: Row) => (r.anchor ? cssVar('--ink') : cssVar(scoreColor(r.my).slice(4, -1)))
+const colorOf = (r: Row) => (r.anchor ? cssVar('--ink') : ratingBasis(r) === 'none' ? cssVar('--uncertain') : cssVar(scoreColor(r.my).slice(4, -1)))
 
 // ---- точки: обычные рисуем на canvas, отмеченные — значками с «+»/«−» поверх
 interface Entry { layer: L.CircleMarker | L.Marker; kind: string; on: boolean }

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { buildRows, partsTitle } from '../src/lib/rows'
 import { ratingBasis, ratingEvidence } from '../src/lib/rating'
-import { tooltipHtml } from '../src/lib/maplegend'
+import { tooltipHtml, rowScoreKey, legendCounts } from '../src/lib/maplegend'
 import { reviewFit } from '../src/lib/review-fit'
 import { defaultFilters, passes, decodeFilters, encodeFilters } from '../src/lib/filters'
 import type { Hotel, Stop, Prices } from '../src/lib/types'
@@ -21,6 +21,9 @@ const unrated = buildRows(stop,[{...hotel,sc:null,rv:0}],prices).rows[0]!
 assert.ok(Number.isFinite(unrated.my))
 assert.ok(unrated.my! < 8)
 assert.equal(ratingBasis(unrated),'none')
+assert.equal(rowScoreKey(unrated),'gnone')
+assert.equal(legendCounts([unrated],new Set([unrated.id]),()=>0).gnone,1)
+assert.equal(legendCounts([unrated],new Set([unrated.id]),()=>0).glow,undefined)
 assert.equal(reviewFit(unrated).state,'unknown')
 assert.match(ratingEvidence(unrated), /не подтверждает качество/)
 assert.equal(reviewFit({...hotel,an:1,reviewRisks:{scam:1}}).state,'concerns')
