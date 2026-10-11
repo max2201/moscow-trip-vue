@@ -102,6 +102,7 @@ export interface SourceStatus {
   state: 'ok' | 'error' | 'pending' | 'manual'
   message?: string; collectedAt?: string | null; attemptedAt?: string | null
   mode?: string | null; complete?: boolean; automatic?: boolean
+  coverage?: { pages?: number; priced?: number; saved?: number; reason?: string; complete?: boolean } | null
 }
 
 export interface Parts { base: number; fl: number; neg: number; tr: number; sm: number; prox: number; value: number }
