@@ -1,5 +1,6 @@
 import type { Hotel, Level, Prices, Row, Stop, StopRows } from './types'
 import { clamp, hav, kmText, plural, dec } from './format'
+import { reviewFit } from './review-fit'
 
 export const TYPES: [string, string[]][] = [
   ['Отели', ['Отель', 'Мотель', 'Парк-отель', 'Отель для свиданий']],
@@ -47,6 +48,8 @@ export function buildRows(stop: Stop, hotels: Hotel[], prices: Prices): StopRows
       ...h, ...p[8], source: p[8]?.source || h.source || 'ostrovok', tg: typeGroup(h.cat), night: p[0], total, free: p[2] == null ? null : !!p[2], room,
       dorm: !!p[4], shared: !!p[5], nowin: !!p[6], tc: p[7] || null, km,
       anchor: +id === stop.anchor, proposed: +id === stop.proposed,
+      housing: p[8]?.housing || { bathtub: null, rooms: null, duplex: null, evidence: {} },
+      reviewFit: reviewFit(h),
     } as Row
     const tcYear = (re: RegExp) => (r.tc?.n ?? []).map((x) => x.match(re)?.[1]).find(Boolean) ?? ''
     r.yr = h.yr || tcYear(/Работает с\D*(\d{4})/)
@@ -108,7 +111,7 @@ export function brief(r: Row, stop: Stop): Brief {
 
 export function partsTitle(r: Row) {
   const p = r.parts
-  if (!p) return 'Слишком мало отзывов для оценки'
+  if (!p) return r.an === 0 ? 'Тексты отзывов ещё не разобраны' : 'Слишком мало отзывов для оценки'
   const sg = (x: number) => (x >= 0 ? '+' : '') + dec(x)
   return `Основа ${dec(p.base.toFixed(1))}; флаги ${dec(p.fl)}; близость ${sg(p.prox)}; цена ${sg(p.value)}; негатив ${sg(p.neg)}; динамика ${sg(p.tr)}${p.sm ? '; мало отзывов ' + dec(p.sm) : ''}`
 }

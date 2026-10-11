@@ -10,6 +10,7 @@ import BriefBlock from './BriefBlock.vue'
 import FlagsBlock from './FlagsBlock.vue'
 import Badges from './Badges.vue'
 import TcMarksBlock from './TcMarksBlock.vue'
+import HousingFacts from './HousingFacts.vue'
 import { useMarks } from '../composables/useMarks'
 const props = defineProps<{ r: Row; stop: Stop; selected: boolean }>()
 const { store, version } = useMarks()
@@ -36,6 +37,7 @@ const mark = computed(() => (version.value, store.mine(props.stop.id, props.r.id
       <span>{{ sourceLabel(r.reviewSource || r.source) }} <b>{{ dec1(r.sc) }}/10</b> ({{ fmt(r.rv) }})</span>
     </div>
     <div class="meta">{{ sourceLabel(r.source) }}<template v-if="r.collectedAt"> · {{ collectedText(r.collectedAt) }}</template></div>
+    <HousingFacts :row="r" />
     <BriefBlock :row="r" :stop="stop" />
     <details>
       <summary>Подробнее: плюсы, минусы, флаги, удобства</summary>

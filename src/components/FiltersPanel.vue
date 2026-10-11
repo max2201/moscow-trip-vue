@@ -10,6 +10,7 @@ import { useMarks } from '../composables/useMarks'
 import { plural } from '../lib/format'
 import { radiusText } from '../lib/maplegend'
 import { useLegend } from '../composables/useLegend'
+import { REVIEW_CRITERIA } from '../lib/review-fit'
 
 const props = defineProps<{ filters: Filters; rows: Row[]; stop: Stop; guide: Guide; shown: number; total: number }>()
 const { store, version } = useMarks()
@@ -27,6 +28,9 @@ const tcCounts = computed(() => Object.fromEntries(TC_LABELS.map(([k]) => [k, pr
 const savedCount = computed(() => props.rows.filter((r) => r.sv).length)
 const balCount = computed(() => props.rows.filter((r) => r.balcony).length)
 const balRoomCount = computed(() => props.rows.filter((r) => r.balRoom).length)
+const reviewCount = (state: string) => props.rows.filter(r => r.reviewFit.state === state).length
+const roomOptions = [['0', 'Студия'], ['1', '1'], ['2', '2'], ['3', '3'], ['4+', '4+'], ['unknown', 'Неизвестно']] as const
+const roomCount = (key: string) => props.rows.filter(r => (r.housing.rooms == null ? 'unknown' : r.housing.rooms >= 4 ? '4+' : String(r.housing.rooms)) === key).length
 const flags = computed(() => FLAG_LABELS.filter(([k]) => k !== 'saved' || savedCount.value))
 // у «Только в радиусе» вместо числа — текущий радиус круга с карты
 const flagCount = (k: FlagKey) => (k === 'inradius' ? radiusText(legend.value.r) : k === 'balcony' ? balCount.value : k === 'balroom' ? balRoomCount.value : k === 'saved' ? savedCount.value : null)
@@ -101,6 +105,30 @@ const typeTitle = (t: string) => (TYPES.find((x) => x[0] === t)?.[1] ?? ['без
         </div>
       </div>
     </div>
+    <div class="prow">
+      <label class="group housing-select"><span class="glabel">По отзывам</span>
+        <select v-model="f.reviews" aria-label="По отзывам">
+          <option value="">Любые</option>
+          <option value="ok">Можно рассматривать · {{ reviewCount('ok') }}</option>
+          <option value="concerns">Есть сомнения · {{ reviewCount('concerns') }}</option>
+          <option value="unknown">Недостаточно данных · {{ reviewCount('unknown') }}</option>
+        </select>
+      </label>
+      <label class="group housing-select"><span class="glabel">Ванна в выбранном жилье</span>
+        <select v-model="f.bathtub" aria-label="Ванна"><option value="">Любые</option><option value="yes">Есть ванна</option><option value="no">Ванны нет — указано явно</option><option value="unknown">Неизвестно</option></select>
+      </label>
+      <label class="group housing-select"><span class="glabel">Двухуровневость</span>
+        <select v-model="f.duplex" aria-label="Двухуровневость"><option value="">Любые</option><option value="yes">Два уровня</option><option value="no">Один уровень — указано явно</option><option value="unknown">Неизвестно</option></select>
+      </label>
+      <div class="group"><span class="glabel">Количество жилых комнат</span><div class="zones">
+        <button v-for="[key, label] in roomOptions" :key="key" type="button" class="chip" :aria-label="'Комнаты: ' + label" :aria-pressed="f.rooms.includes(key)" @click="toggle(f.rooms, key)">{{ label }} <span class="sub">{{ roomCount(key) }}</span></button>
+        <button class="link" type="button" @click="f.rooms.splice(0)">Любое количество</button>
+      </div></div>
+    </div>
+    <details class="filter-explanation"><summary>Как работают фильтры отзывов и планировки</summary>
+      <p>{{ REVIEW_CRITERIA }}</p>
+      <p>Ванна — именно ванна, а не просто ванная комната. Комнаты и уровни относятся к предложению с указанной ценой. Двухместность и двухъярусная кровать не означают две комнаты или два уровня. Студия выделена отдельно. Признаки берутся из названия номера или отдельной квартиры; источник виден в подсказке у признака. Отсутствие упоминания означает «неизвестно», а не «нет». Упоминание ванны в отзывах об отеле не подтверждает её в выбранном номере.</p>
+    </details>
     <div class="prow">
       <div v-for="[a, b, label, step] in RANGES" :key="a" class="group">
         <span class="glabel">{{ label }}</span>

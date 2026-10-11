@@ -15,6 +15,10 @@ export interface Filters {
   zones: string[]
   types: string[]
   sources: string[]
+  reviews: '' | 'ok' | 'concerns' | 'unknown'
+  bathtub: '' | 'yes' | 'no' | 'unknown'
+  duplex: '' | 'yes' | 'no' | 'unknown'
+  rooms: string[]
   tcm: TcKey[]          // отметки trip.com: показывать отели, у которых есть хотя бы одна из выбранных
   flags: FlagKey[]
   ranges: Partial<Record<RangeKey, number>>
@@ -32,7 +36,7 @@ export const FLAG_LABELS: [FlagKey, string][] = [
 export const ASC_FIRST: SortKey[] = ['mark', 'km', 'night', 'rank', 'name', 'free', 'ng', 'ns', 'flag']
 
 export const defaultFilters = (stop: Stop): Filters => ({
-  q: '', zones: [], types: [], sources: [], tcm: [], flags: ['nodorm'], ranges: {}, area: null, sort: 'my', dir: -1,
+  q: '', zones: [], types: [], sources: [], reviews: '', bathtub: '', duplex: '', rooms: [], tcm: [], flags: ['nodorm'], ranges: {}, area: null, sort: 'my', dir: -1,
 })
 
 export interface MarkView {
@@ -45,6 +49,11 @@ const inRange = (v: number | null, lo?: number, hi?: number) =>
 
 /** radiusM — радиус круга на карте (в метрах): его использует флажок «Только в радиусе». */
 export function passes(r: Row, f: Filters, marks: MarkView, radiusM?: number) {
+  if (f.reviews && r.reviewFit.state !== f.reviews) return false
+  const matchesFact = (value: boolean | null, wanted: Filters['bathtub']) => !wanted || (wanted === 'unknown' ? value == null : value === (wanted === 'yes'))
+  if (!matchesFact(r.housing.bathtub, f.bathtub) || !matchesFact(r.housing.duplex, f.duplex)) return false
+  const roomKey = r.housing.rooms == null ? 'unknown' : r.housing.rooms >= 4 ? '4+' : String(r.housing.rooms)
+  if (f.rooms.length && !f.rooms.includes(roomKey)) return false
   if (f.sources?.length && !f.sources.includes(r.source || 'ostrovok')) return false
   if (f.q && !r.nm.toLowerCase().includes(f.q.toLowerCase())) return false
   // Обведённая на карте область — строгий фильтр, даже для отелей из плана
@@ -94,7 +103,7 @@ export function sortValue(r: Row, k: SortKey, marks: MarkView): number | string 
 }
 
 export function applyFilters(rows: Row[], f: Filters, marks: MarkView, radiusM?: number) {
-  // «Наш» отель идёт в общем списке и сортируется как все (проходит любые фильтры, кроме поиска по названию).
+  // План остаётся в списке, но новые критерии отзывов/планировки применяются и к нему.
   const list = rows.filter((r) => passes(r, f, marks, radiusM))
   list.sort((a, b) => {
     const x = sortValue(a, f.sort, marks), y = sortValue(b, f.sort, marks)
@@ -114,6 +123,10 @@ export function encodeFilters(f: Filters, stop: Stop): string {
   if (f.zones.join('|') !== d.zones.join('|')) o.z = f.zones
   if (f.types.length) o.t = f.types
   if (f.sources.length) o.src = f.sources
+  if (f.reviews) o.rev = f.reviews
+  if (f.bathtub) o.bath = f.bathtub
+  if (f.duplex) o.duplex = f.duplex
+  if (f.rooms.length) o.rooms = f.rooms
   if (f.tcm.length) o.c = f.tcm
   if (f.flags.join(',') !== d.flags.join(',')) o.f = f.flags
   if (Object.keys(f.ranges).length) o.r = f.ranges
@@ -130,6 +143,10 @@ export function decodeFilters(raw: string | null | undefined, stop: Stop): Filte
     if (Array.isArray(o.z)) f.zones = o.z
     if (Array.isArray(o.t)) f.types = o.t
     if (Array.isArray(o.src)) f.sources = o.src.filter((s: unknown): s is string => typeof s === 'string')
+    if (['ok', 'concerns', 'unknown'].includes(o.rev)) f.reviews = o.rev
+    if (['yes', 'no', 'unknown'].includes(o.bath)) f.bathtub = o.bath
+    if (['yes', 'no', 'unknown'].includes(o.duplex)) f.duplex = o.duplex
+    if (Array.isArray(o.rooms)) f.rooms = o.rooms.filter((v: unknown) => ['0', '1', '2', '3', '4+', 'unknown'].includes(String(v))).map(String)
     if (Array.isArray(o.c)) f.tcm = o.c.filter((k: TcKey) => TC_LABELS.some(([x]) => x === k))
     if (Array.isArray(o.f)) f.flags = o.f.filter((k: FlagKey) => FLAG_LABELS.some(([x]) => x === k))
     if (o.r && typeof o.r === 'object') f.ranges = o.r
