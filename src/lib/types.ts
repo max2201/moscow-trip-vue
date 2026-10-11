@@ -33,6 +33,12 @@ export interface Hotel {
   cp: [number, number, number, number, number] | null // база, флаги, негатив, динамика, мало отзывов
   sv?: number           // в сохранённых
   o?: string            // код отеля на Островке (для ссылки)
+  source?: string
+  reviewSource?: string
+  sourceScore?: number | null
+  scoreMax?: number
+  sourceKm?: number | null
+  url?: string | null
   fx?: string[]         // чем известен
   rf?: string[]         // осторожно
   lc?: string           // где
@@ -46,7 +52,8 @@ export interface Hotel {
 export interface TcMarks { m?: number; a?: [number, string, string]; n?: string[]; ad?: 1; p?: string[]; d?: number; r?: string[] }
 
 /** [ночь, всего, бесплатная отмена, номер, койка, общий санузел, без окна, отметки trip.com (0 — нет)] */
-export type PriceTuple = [number | null, number | null, 0 | 1, string, 0 | 1, 0 | 1, 0 | 1, (TcMarks | 0)?]
+export interface OfferMeta { source?: string; url?: string | null; collectedAt?: string | null; distanceBasis?: string }
+export type PriceTuple = [number | null, number | null, 0 | 1 | null, string, 0 | 1, 0 | 1, 0 | 1, (TcMarks | 0)?, OfferMeta?]
 export type Prices = Record<string, PriceTuple>
 
 export type EventTuple = [date: string, title: string, place: string, status: string, note: string]
@@ -57,6 +64,7 @@ export interface Stop {
   anchor: number; anchorName: string; proposed: number; proposedName: string
   prio: string[]; note: string; events: EventTuple[]
   alat: number; alng: number; limit: number; priceCount: number
+  totalLimit?: number
   /** Объединённая остановка (общий взгляд на несколько отрезков): её отметки собираются из merge. */
   virtual?: boolean; merge?: string[]
 }
@@ -69,6 +77,7 @@ export interface Guide {
 }
 
 export interface TripIndex {
+  sources?: Record<string, SourceStatus[]>
   stops: Stop[]
   guides: Record<CityId, Guide>
   tripwide: [date: string, title: string, place: string, status: string][]
@@ -79,12 +88,21 @@ export interface TripIndex {
   places?: Partial<Record<CityId, Partial<Record<'sights' | 'trips' | 'events', Record<string, [number, number]>>>>>
 }
 
+export interface SourceStatus {
+  id: string; label: string; url: string; count: number
+  state: 'ok' | 'error' | 'pending' | 'manual'
+  message?: string; collectedAt?: string | null; attemptedAt?: string | null
+  mode?: string | null; complete?: boolean; automatic?: boolean
+}
+
 export interface Parts { base: number; fl: number; neg: number; tr: number; sm: number; prox: number; value: number }
 
 /** Отель в контексте конкретной остановки: цена на её даты, расстояние, моя оценка. */
 export interface Row extends Hotel {
   tg: string
-  night: number | null; total: number | null; free: boolean; room: string
+  night: number | null; total: number | null; free: boolean | null; room: string
+  collectedAt?: string | null
+  distanceBasis?: string
   dorm: boolean; shared: boolean; nowin: boolean
   km: number | null; anchor: boolean; proposed: boolean
   balRoom: boolean; balRev: boolean; balcony: boolean

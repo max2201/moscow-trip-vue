@@ -45,7 +45,7 @@ function showZone(z: string) {
   <main v-if="s" class="stop">
     <div class="shead"><div>
       <h2><span :class="['cityline', 'c-' + s.city]"></span>{{ s.title }}: {{ s.sub }}</h2>
-      <div class="sub">{{ s.days }}, {{ s.nights }} {{ plural(s.nights, 'ночь', 'ночи', 'ночей') }}{{ s.together ? ', вместе' : ', живёте раздельно' }}. В таблице — жильё с Островка до {{ fmt(s.limit) }} ₽ за ночь</div>
+      <div class="sub">{{ s.days }}, {{ s.nights }} {{ plural(s.nights, 'ночь', 'ночи', 'ночей') }}{{ s.together ? ', вместе' : ', живёте раздельно' }}. В таблице — жильё до {{ fmt(s.totalLimit ?? 40000) }} ₽ за весь срок для двоих</div>
     </div></div>
     <div v-if="error" class="err">Не удалось загрузить данные: {{ error }}</div>
     <div v-else-if="loading || !data || !guide || !filters" class="loading">Загружаю отели…</div>

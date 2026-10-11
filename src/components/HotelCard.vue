@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { bookingLink, sourceLabel, collectedText } from '../lib/booking'
 import type { Row, Stop } from '../lib/types'
-import { AMENITY, consList, tripLink } from '../lib/rows'
+import { AMENITY, consList } from '../lib/rows'
 import { dec, dec1, fmt } from '../lib/format'
 import MarkButton from './MarkButton.vue'
 import ScoreChip from './ScoreChip.vue'
@@ -20,7 +21,7 @@ const mark = computed(() => (version.value, store.mine(props.stop.id, props.r.id
     <div class="hcard-top">
       <MarkButton :stop="stop.id" :id="r.id" />
       <div>
-        <h3><a :href="tripLink(r.id, stop, r.o)" target="_blank" rel="noopener">{{ r.nm }}</a></h3>
+        <h3><a :href="bookingLink(r, stop)" target="_blank" rel="noopener">{{ r.nm }}</a></h3>
         <div class="meta">#{{ r.rank }}, {{ r.z }}<template v-if="r.yr">, открыт в {{ r.yr }}</template><template v-if="r.ry">, ремонт {{ r.ry }}</template></div>
         <Badges :row="r" :stop="stop" />
         <TcMarksBlock :tc="r.tc" quiet />
@@ -28,11 +29,13 @@ const mark = computed(() => (version.value, store.mine(props.stop.id, props.r.id
       <ScoreChip :row="r" />
     </div>
     <div class="facts">
-      <span><b>{{ r.night ? fmt(r.night) + ' ₽' : 'нет цены' }}</b> за ночь</span>
-      <span :class="r.free ? 'free' : ''">{{ r.free ? 'бесплатная отмена' : 'отмена платная' }}</span>
-      <span v-if="!r.anchor && r.km != null"><b>{{ dec(r.km.toFixed(2)) }} км</b> до Красной площади</span>
-      <span>Островок <b>{{ dec1(r.sc) }}</b> ({{ fmt(r.rv) }})</span>
+      <span><b>{{ r.total ? fmt(r.total) + ' ₽' : 'нет цены' }}</b> за {{ stop.nights }} ночей</span>
+      <span v-if="r.night">{{ fmt(r.night) }} ₽ / ночь</span>
+      <span :class="r.free ? 'free' : ''">{{ r.free === null ? 'условия отмены уточнить' : r.free ? 'бесплатная отмена' : 'отмена платная' }}</span>
+      <span v-if="!r.anchor && r.km != null"><b>{{ dec(r.km.toFixed(2)) }} км</b> {{ r.distanceBasis === 'source' ? 'до центра по площадке' : 'до Красной площади' }}</span>
+      <span>{{ sourceLabel(r.reviewSource || r.source) }} <b>{{ dec1(r.sc) }}/10</b> ({{ fmt(r.rv) }})</span>
     </div>
+    <div class="meta">{{ sourceLabel(r.source) }}<template v-if="r.collectedAt"> · {{ collectedText(r.collectedAt) }}</template></div>
     <BriefBlock :row="r" :stop="stop" />
     <details>
       <summary>Подробнее: плюсы, минусы, флаги, удобства</summary>

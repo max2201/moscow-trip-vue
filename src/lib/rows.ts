@@ -38,10 +38,13 @@ export function buildRows(stop: Stop, hotels: Hotel[], prices: Prices): StopRows
   for (const [id, p] of Object.entries(prices)) {
     const h = byId.get(+id)
     if (!h) continue
-    const km = h.la && stop.alat ? hav(stop.alat, stop.alng, h.la, h.ln as number) : null
+    const total = p[1] ?? (p[0] ? p[0] * stop.nights : null)
+    const totalLimit = stop.totalLimit ?? 40000
+    if (total == null || !Number.isFinite(total) || total <= 0 || total > totalLimit) continue
+    const km = h.la && h.ln && stop.alat ? hav(stop.alat, stop.alng, h.la, h.ln) : h.sourceKm ?? null
     const room = p[3] || ''
     const r = {
-      ...h, tg: typeGroup(h.cat), night: p[0], total: p[1], free: !!p[2], room,
+      ...h, ...p[8], source: p[8]?.source || h.source || 'ostrovok', tg: typeGroup(h.cat), night: p[0], total, free: p[2] == null ? null : !!p[2], room,
       dorm: !!p[4], shared: !!p[5], nowin: !!p[6], tc: p[7] || null, km,
       anchor: +id === stop.anchor, proposed: +id === stop.proposed,
     } as Row
@@ -84,7 +87,7 @@ export function travel(km: number | null, stop: Stop, r: { ln: number | null }) 
   return `≈${Math.round(km * 2.2 + 8)} мин на метро`
 }
 
-export interface Brief { known: string[]; warn: string[]; reputation: 'ok' | 'few' | null; where: string; anchorLine: string }
+export interface Brief { known: string[]; warn: string[]; reputation: 'ok' | 'few' | 'unread' | null; where: string; anchorLine: string }
 
 /** «Коротко об отеле»: чем известен, осторожно, где. */
 export function brief(r: Row, stop: Stop): Brief {
@@ -93,12 +96,12 @@ export function brief(r: Row, stop: Stop): Brief {
   if (r.insLvl === 'fb') warn.unshift(`часто пишут о насекомых — ${n(r.ins)}`)
   if (r.smLvl === 'fb') warn.unshift(`часто пишут о запахе — ${n(r.sm)}`)
   if (r.dmLvl === 'fb') warn.unshift(`часто пишут о сырости — ${n(r.dm)}`)
-  const anchorLine = r.km == null ? '' : `До ${stop.anchorName === 'Красная площадь' ? 'Красной площади' : stop.anchorName}: ${kmText(r.km)}, ${travel(r.km, stop, r)}.`
+  const anchorLine = r.km == null || r.distanceBasis === 'source' ? '' : `До ${stop.anchorName === 'Красная площадь' ? 'Красной площади' : stop.anchorName}: ${kmText(r.km)}, ${travel(r.km, stop, r)}.`
   return {
     known: r.fx || [],
     warn: warn.slice(0, 4),
-    reputation: warn.length ? null : r.an >= 30 ? 'ok' : 'few',
-    where: r.lc || '—',
+    reputation: warn.length ? null : r.an === 0 ? 'unread' : r.an >= 30 ? 'ok' : 'few',
+    where: r.lc || r.ad || 'расположение уточняйте на площадке',
     anchorLine,
   }
 }

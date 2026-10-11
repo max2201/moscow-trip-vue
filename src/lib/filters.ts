@@ -14,6 +14,7 @@ export interface Filters {
   q: string
   zones: string[]
   types: string[]
+  sources: string[]
   tcm: TcKey[]          // отметки trip.com: показывать отели, у которых есть хотя бы одна из выбранных
   flags: FlagKey[]
   ranges: Partial<Record<RangeKey, number>>
@@ -31,7 +32,7 @@ export const FLAG_LABELS: [FlagKey, string][] = [
 export const ASC_FIRST: SortKey[] = ['mark', 'km', 'night', 'rank', 'name', 'free', 'ng', 'ns', 'flag']
 
 export const defaultFilters = (stop: Stop): Filters => ({
-  q: '', zones: [...stop.prio], types: [], tcm: [], flags: ['nodorm'], ranges: {}, area: null, sort: 'my', dir: -1,
+  q: '', zones: [], types: [], sources: [], tcm: [], flags: ['nodorm'], ranges: {}, area: null, sort: 'my', dir: -1,
 })
 
 export interface MarkView {
@@ -44,6 +45,7 @@ const inRange = (v: number | null, lo?: number, hi?: number) =>
 
 /** radiusM — радиус круга на карте (в метрах): его использует флажок «Только в радиусе». */
 export function passes(r: Row, f: Filters, marks: MarkView, radiusM?: number) {
+  if (f.sources?.length && !f.sources.includes(r.source || 'ostrovok')) return false
   if (f.q && !r.nm.toLowerCase().includes(f.q.toLowerCase())) return false
   // Обведённая на карте область — строгий фильтр, даже для отелей из плана
   if (f.area && f.area.length >= 3 && (r.la == null || r.ln == null || !inArea(r.la, r.ln, f.area))) return false
@@ -79,6 +81,7 @@ export function sortValue(r: Row, k: SortKey, marks: MarkView): number | string 
     case 'mark': { const m = marks.mine(r.id); return m === 1 ? 0 : m === -1 ? 3 : marks.anyPlus(r.id) ? 1 : 2 }
     case 'name': return r.nm.toLowerCase()
     case 'free': return r.free ? 0 : 1
+    case 'night': return r.total
     case 'brief': return (r.fx || []).length - 2 * (r.rf || []).length
     case 'pr': return r.pr.length
     case 'co': return r.co.length
@@ -110,6 +113,7 @@ export function encodeFilters(f: Filters, stop: Stop): string {
   if (f.q) o.q = f.q
   if (f.zones.join('|') !== d.zones.join('|')) o.z = f.zones
   if (f.types.length) o.t = f.types
+  if (f.sources.length) o.src = f.sources
   if (f.tcm.length) o.c = f.tcm
   if (f.flags.join(',') !== d.flags.join(',')) o.f = f.flags
   if (Object.keys(f.ranges).length) o.r = f.ranges
@@ -125,6 +129,7 @@ export function decodeFilters(raw: string | null | undefined, stop: Stop): Filte
     if (typeof o.q === 'string') f.q = o.q
     if (Array.isArray(o.z)) f.zones = o.z
     if (Array.isArray(o.t)) f.types = o.t
+    if (Array.isArray(o.src)) f.sources = o.src.filter((s: unknown): s is string => typeof s === 'string')
     if (Array.isArray(o.c)) f.tcm = o.c.filter((k: TcKey) => TC_LABELS.some(([x]) => x === k))
     if (Array.isArray(o.f)) f.flags = o.f.filter((k: FlagKey) => FLAG_LABELS.some(([x]) => x === k))
     if (o.r && typeof o.r === 'object') f.ranges = o.r
