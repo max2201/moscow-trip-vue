@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { buildRows, partsTitle } from '../src/lib/rows'
+import { buildRows, partsTitle, brief } from '../src/lib/rows'
 import { ratingBasis, ratingEvidence } from '../src/lib/rating'
 import { tooltipHtml, rowScoreKey, legendCounts } from '../src/lib/maplegend'
 import { reviewFit } from '../src/lib/review-fit'
@@ -27,6 +27,9 @@ assert.equal(legendCounts([unrated],new Set([unrated.id]),()=>0).glow,undefined)
 assert.equal(reviewFit(unrated).state,'unknown')
 assert.match(ratingEvidence(unrated), /не подтверждает качество/)
 assert.equal(reviewFit({...hotel,an:1,reviewRisks:{scam:1}}).state,'concerns')
+const riskRow = buildRows(stop,[{...hotel,an:30,reviewRisks:{scam:1}}],prices).rows[0]!
+assert.match(brief(riskRow,stop).warn.join(' '), /Обман с деньгами/)
+assert.notEqual(brief(riskRow,stop).reputation,'ok')
 assert.equal(reviewFit({...hotel,sc:7.5}).state,'concerns')
 const f=defaultFilters(stop), marks={mine:()=>0 as const,anyPlus:()=>false}
 f.reviews='consider'; assert.equal(passes(rated,f,marks),true); assert.equal(passes(unrated,f,marks),false)

@@ -93,7 +93,7 @@ export interface Brief { known: string[]; warn: string[]; reputation: 'ok' | 'fe
 
 /** «Коротко об отеле»: чем известен, осторожно, где. */
 export function brief(r: Row, stop: Stop): Brief {
-  const warn = [...(r.rf || [])]
+  const warn = [...new Set([...(r.reviewFit.state === 'concerns' ? r.reviewFit.reasons : []), ...(r.rf || [])])]
   const n = (c: number) => `${c} ${plural(c, 'отзыв', 'отзыва', 'отзывов')}`
   if (r.insLvl === 'fb') warn.unshift(`часто пишут о насекомых — ${n(r.ins)}`)
   if (r.smLvl === 'fb') warn.unshift(`часто пишут о запахе — ${n(r.sm)}`)
